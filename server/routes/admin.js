@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const db = require('../db');
+const supabase = require('../supabase');
 const { verifyLogin, requireAuthApi } = require('../auth');
 
 const router = express.Router();
@@ -278,6 +279,44 @@ router.delete('/gallery/:id', wrap(async (req, res) => {
   await db.deleteGalleryItem(toInt(req.params.id));
   res.json({ ok: true });
 }));
+
+// Receives the already-resized full and thumbnail images from the browser and
+// forwards them to Supabase Storage. The browser shrinks the photo first, so the
+// payload stays small and works within the serverless request size limit, and
+// the huge original never has to travel over the network.
+const memUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ok = /^image\/(png|jpeg|jpg|webp)$/.test(file.mimetype);
+    cb(ok ? null : new Error('Only image files are allowed.'), ok);
+  }
+});
+
+router.post('/gallery/upload', (req, res) => {
+  if (!supabase.isConfigured()) {
+    return res.status(501).json({
+      error: 'Supabase storage is not set up. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, then create a public bucket named "photos".'
+    });
+  }
+  memUpload.fields([{ name: 'full', maxCount: 1 }, { name: 'thumb', maxCount: 1 }])(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    try {
+      const full = req.files && req.files.full && req.files.full[0];
+      if (!full) return res.status(400).json({ error: 'No image was received.' });
+      const thumb = req.files && req.files.thumb && req.files.thumb[0];
+      const name = String(req.body.name || 'photo');
+
+      const image_url = await supabase.uploadImage(full.buffer, full.mimetype, name);
+      let thumb_url = '';
+      if (thumb) thumb_url = await supabase.uploadImage(thumb.buffer, thumb.mimetype, `${name}-thumb`);
+
+      res.json({ ok: true, image_url, thumb_url });
+    } catch (e) {
+      res.status(502).json({ error: e.message });
+    }
+  });
+});
 
 /* -------------------------------------------------------------- messages */
 

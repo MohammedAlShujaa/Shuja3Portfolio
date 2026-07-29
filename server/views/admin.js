@@ -78,8 +78,113 @@ const editorError = document.getElementById('editor-error');
 
 document.getElementById('editor-cancel').addEventListener('click', () => dialog.close('cancel'));
 
+/* --------------------------------------- browser-side image resizing ---
+   Shrinks a photo in the browser before upload, so a 15 MB original becomes a
+   small web image and stays under the serverless request size limit. */
+
+async function loadBitmap(file) {
+  // imageOrientation respects the camera rotation stored in the photo's EXIF.
+  try {
+    return await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    return await createImageBitmap(file);
+  }
+}
+
+function canvasToJpeg(canvas, quality) {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+}
+
+async function resizeToLongEdge(file, maxEdge, quality) {
+  const bmp = await loadBitmap(file);
+  const scale = Math.min(maxEdge / Math.max(bmp.width, bmp.height), 1);
+  const w = Math.round(bmp.width * scale);
+  const h = Math.round(bmp.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+  return canvasToJpeg(canvas, quality);
+}
+
+async function makeSquareThumb(file, size, quality) {
+  const bmp = await loadBitmap(file);
+  const side = Math.min(bmp.width, bmp.height);
+  const sx = (bmp.width - side) / 2;
+  const sy = (bmp.height - side) / 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  canvas.getContext('2d').drawImage(bmp, sx, sy, side, side, 0, 0, size, size);
+  return canvasToJpeg(canvas, quality);
+}
+
+async function uploadGalleryImage(file, name) {
+  const [full, thumb] = await Promise.all([
+    resizeToLongEdge(file, 2000, 0.82),
+    makeSquareThumb(file, 700, 0.82)
+  ]);
+  const fd = new FormData();
+  fd.append('full', full, 'full.jpg');
+  fd.append('thumb', thumb, 'thumb.jpg');
+  fd.append('name', name || 'photo');
+
+  const res = await fetch('/api/admin/gallery/upload', { method: 'POST', body: fd });
+  if (res.status === 401) {
+    location.href = '/admin/login';
+    throw new Error('Session expired.');
+  }
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((body && body.error) || 'Upload failed.');
+  return body; // { image_url, thumb_url }
+}
+
 // Builds one labelled input from a small spec, so every editor form looks the same.
 function buildField(spec) {
+  // A file picker that resizes and uploads to Supabase, then fills the URL fields.
+  if (spec.type === 'upload') {
+    const wrap = el('div', 'field');
+    const id = `f-${spec.name}`;
+    const label = el('label', null, spec.label);
+    label.htmlFor = id;
+
+    const input = el('input');
+    input.type = 'file';
+    input.id = id;
+    input.accept = 'image/*';
+
+    const status = el('p', 'hint', '');
+    const preview = el('img', 'thumb-preview');
+    preview.hidden = true;
+
+    input.addEventListener('change', async () => {
+      if (!input.files.length) return;
+      const file = input.files[0];
+      status.textContent = 'Resizing and uploading, please wait ...';
+      input.disabled = true;
+      try {
+        const guess = (editorForm.elements.title && editorForm.elements.title.value) || file.name;
+        const { image_url, thumb_url } = await uploadGalleryImage(file, guess);
+        if (editorForm.elements.image_url) editorForm.elements.image_url.value = image_url;
+        if (editorForm.elements.thumb_url) editorForm.elements.thumb_url.value = thumb_url || '';
+        preview.src = thumb_url || image_url;
+        preview.hidden = false;
+        status.textContent = 'Uploaded. Add a category and title if you like, then Save.';
+      } catch (err) {
+        status.textContent = err.message;
+      } finally {
+        input.disabled = false;
+      }
+    });
+
+    label.appendChild(input);
+    wrap.appendChild(label);
+    if (spec.hint) wrap.appendChild(el('p', 'hint', spec.hint));
+    wrap.appendChild(status);
+    wrap.appendChild(preview);
+    return wrap;
+  }
+
   const wrap = el('div', spec.type === 'checkbox' ? 'field field--check' : 'field');
   const id = `f-${spec.name}`;
 
@@ -137,6 +242,7 @@ function openEditor({ title, fields, onSubmit }) {
 
     const values = {};
     fields.forEach((f) => {
+      if (f.type === 'upload') return; // a control, not a saved value
       const input = editorForm.elements[f.name];
       values[f.name] = f.type === 'checkbox' ? input.checked : input.value.trim();
     });
@@ -601,7 +707,8 @@ document.getElementById('add-social').addEventListener('click', () => {
 const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
 
 const galleryFields = (g = {}) => [
-  { name: 'image_url', label: 'Full image URL', value: g.image_url, required: true, hint: 'The large web version, for example a Supabase public URL.' },
+  { name: '_upload', type: 'upload', label: 'Upload a photo from your computer', hint: 'It is resized in your browser and sent to Supabase automatically. The two URL fields below fill in for you. You can also paste URLs by hand instead.' },
+  { name: 'image_url', label: 'Full image URL', value: g.image_url, required: true, hint: 'The large web version. Filled in by the upload above, or paste a URL.' },
   { name: 'thumb_url', label: 'Thumbnail URL (optional)', value: g.thumb_url, hint: 'A smaller version for the grid. Leave empty to reuse the full image.' },
   { name: 'category', label: 'Category', type: 'select', options: GALLERY_CATEGORIES, value: g.category || GALLERY_CATEGORIES[0] },
   { name: 'title', label: 'Title (optional)', value: g.title, hint: 'For example: MMS Casting, Batch 5.' },
