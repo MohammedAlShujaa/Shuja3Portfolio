@@ -1,0 +1,15 @@
+<!-- Placeholder until a real photo is uploaded through the admin panel. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#131C31"/>
+      <stop offset="1" stop-color="#0B1121"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" fill="url(#g)"/>
+  <circle cx="320" cy="255" r="95" fill="none" stroke="#22D3EE" stroke-width="6" opacity="0.55"/>
+  <path d="M150 545c0-95 76-165 170-165s170 70 170 165" fill="none" stroke="#22D3EE"
+        stroke-width="6" opacity="0.55" stroke-linecap="round"/>
+  <text x="320" y="610" font-family="'JetBrains Mono', monospace" font-size="26"
+        fill="#94A3B8" text-anchor="middle">add your photo</text>
+</svg>

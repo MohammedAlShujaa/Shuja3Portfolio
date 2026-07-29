@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin dashboard</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__brand">shujaa<span>.</span> admin</div>
+    <div class="topbar__right">
+      <a class="btn btn--ghost btn--sm" href="/index.html" target="_blank" rel="noopener">View site</a>
+      <button class="btn btn--ghost btn--sm" type="button" id="logout">Sign out</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="profile" aria-selected="true">Profile</button>
+      <button class="tab" role="tab" data-tab="projects" aria-selected="false">Projects</button>
+      <button class="tab" role="tab" data-tab="skills" aria-selected="false">Skills</button>
+      <button class="tab" role="tab" data-tab="updates" aria-selected="false">Updates</button>
+      <button class="tab" role="tab" data-tab="socials" aria-selected="false">Social links</button>
+      <button class="tab" role="tab" data-tab="messages" aria-selected="false">
+        Messages<span class="tab__badge" id="unread-badge" hidden>0</span>
+      </button>
+    </div>
+
+    <!-- ------------------------------------------------------ profile -->
+    <section class="panel" data-panel="profile" data-active="true">
+      <div class="panel__head">
+        <div>
+          <h2>Profile</h2>
+          <p class="muted" style="margin: 0;">The hero, the call to action buttons, and the contact details.</p>
+        </div>
+      </div>
+
+      <form class="card" id="profile-form">
+        <div class="grid-2">
+          <div class="field">
+            <label for="p-name">Name</label>
+            <input type="text" id="p-name" name="name" required>
+          </div>
+          <div class="field">
+            <label for="p-headline">Headline (the large hero name)</label>
+            <input type="text" id="p-headline" name="headline" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="p-subheading">Subheading</label>
+          <input type="text" id="p-subheading" name="subheading">
+          <p class="hint">The words "machine learning" are shown in the cyan to violet gradient on the home page.</p>
+        </div>
+
+        <div class="field">
+          <label for="p-intro">Intro paragraph</label>
+          <textarea id="p-intro" name="intro"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="p-photo">Profile photo URL</label>
+          <input type="text" id="p-photo" name="photo_url" placeholder="/uploads/photo.jpg or https://...">
+          <div class="btn-row" style="margin-top: 8px;">
+            <input type="file" id="p-photo-file" accept="image/*" style="display: none;">
+            <button class="btn btn--ghost btn--sm" type="button" data-upload-for="p-photo">Upload an image</button>
+          </div>
+          <p class="hint">Paste a URL, or upload a file when running locally. Uploads are disabled on Vercel.</p>
+          <img class="thumb-preview" id="p-photo-preview" alt="Profile photo preview" hidden>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="p-cta1-label">Primary button label</label>
+            <input type="text" id="p-cta1-label" name="cta_primary_label">
+          </div>
+          <div class="field">
+            <label for="p-cta1-href">Primary button link</label>
+            <input type="text" id="p-cta1-href" name="cta_primary_href">
+          </div>
+          <div class="field">
+            <label for="p-cta2-label">Secondary button label</label>
+            <input type="text" id="p-cta2-label" name="cta_secondary_label">
+          </div>
+          <div class="field">
+            <label for="p-cta2-href">Secondary button link</label>
+            <input type="text" id="p-cta2-href" name="cta_secondary_href">
+          </div>
+          <div class="field">
+            <label for="p-location">Location</label>
+            <input type="text" id="p-location" name="location">
+          </div>
+          <div class="field">
+            <label for="p-resume">Resume URL (optional)</label>
+            <input type="text" id="p-resume" name="resume_url">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="p-availability">Availability line (shown on the contact page)</label>
+          <textarea id="p-availability" name="availability" style="min-height: 70px;"></textarea>
+        </div>
+
+        <button class="btn btn--primary" type="submit">Save profile</button>
+        <p class="form-error" data-error></p>
+      </form>
+    </section>
+
+    <!-- ----------------------------------------------------- projects -->
+    <section class="panel" data-panel="projects">
+      <div class="panel__head">
+        <div>
+          <h2>Projects</h2>
+          <p class="muted" style="margin: 0;">The portfolio gallery. Lower sort order appears first.</p>
+        </div>
+        <button class="btn btn--primary" type="button" id="add-project">Add project</button>
+      </div>
+      <div id="projects-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- ------------------------------------------------------- skills -->
+    <section class="panel" data-panel="skills">
+      <div class="panel__head">
+        <div>
+          <h2>Skills</h2>
+          <p class="muted" style="margin: 0;">Grouped icon rows on the About page. Reorder with the arrows.</p>
+        </div>
+        <button class="btn btn--primary" type="button" id="add-skill">Add skill</button>
+      </div>
+      <div id="skills-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- ------------------------------------------------------ updates -->
+    <section class="panel" data-panel="updates">
+      <div class="panel__head">
+        <div>
+          <h2>Updates</h2>
+          <p class="muted" style="margin: 0;">Short posts shown in the feed on the About page.</p>
+        </div>
+        <button class="btn btn--primary" type="button" id="add-update">Add update</button>
+      </div>
+      <div id="updates-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- ------------------------------------------------------ socials -->
+    <section class="panel" data-panel="socials">
+      <div class="panel__head">
+        <div>
+          <h2>Social links</h2>
+          <p class="muted" style="margin: 0;">Shown in the hero, the footer, and the contact page.</p>
+        </div>
+        <button class="btn btn--primary" type="button" id="add-social">Add link</button>
+      </div>
+      <div id="socials-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- ----------------------------------------------------- messages -->
+    <section class="panel" data-panel="messages">
+      <div class="panel__head">
+        <div>
+          <h2>Messages</h2>
+          <p class="muted" style="margin: 0;">Everything sent through the contact form.</p>
+        </div>
+      </div>
+      <div id="messages-list"><p class="muted">Loading ...</p></div>
+    </section>
+  </main>
+
+  <!-- Shared editor dialog. admin.js fills the body per record type. -->
+  <dialog id="editor">
+    <form id="editor-form" method="dialog">
+      <h2 id="editor-title">Edit</h2>
+      <div id="editor-body"></div>
+      <p class="form-error" id="editor-error"></p>
+      <div class="btn-row" style="margin-top: 16px;">
+        <button class="btn btn--primary" type="submit" value="save">Save</button>
+        <button class="btn btn--ghost" type="button" id="editor-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

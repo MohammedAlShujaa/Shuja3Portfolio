@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About, Mohammed Al-Shujaa</title>
+  <meta name="description" content="Final-year Information Engineering student at UNTAG Surabaya, building machine learning and NLP systems and the software around them.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="navbar">
+    <nav class="container navbar__inner" aria-label="Main navigation">
+      <a class="wordmark" href="/index.html">shujaa<span class="wordmark__dot">.</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/about.html" aria-current="page">About</a></li>
+        <li><a href="/portfolio.html">Portfolio</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <section class="section" style="padding-bottom: var(--s5);">
+      <div class="container">
+        <p class="eyebrow">// from Sana'a to Surabaya</p>
+        <h1>About Me</h1>
+
+        <div class="about__grid" style="margin-top: var(--s4);">
+          <img class="about__photo" src="/img/profile-placeholder.svg" alt="Mohammed Al-Shujaa, portrait"
+               data-about-photo>
+
+          <div>
+            <p>
+              I'm Mohammed Al-Shujaa, a final-year Information Engineering student at the University of
+              17 August 1945 (UNTAG) Surabaya, originally from Sana'a, Yemen, and now based in Indonesia.
+              My work sits where data meets software: I build machine learning models, from house-price
+              regression to NLP pipelines with TF-IDF and Word2Vec, and I build the systems around them,
+              like the Laravel and MySQL inventory platform I developed as a software engineering intern
+              at PT Pacific Medan Industri. I hold Stanford's Supervised Machine Learning certificate and
+              work daily with Python, SQL, and modern data tooling.
+            </p>
+            <p>
+              Beyond code, I teach. I have led English speaking classes for around 40 students at UNTAG's
+              ELCC and taught Arabic to more than 50 learners, which shaped how I explain complex,
+              technical ideas simply. Trilingual in Arabic, English, and Indonesian, and formerly the
+              public finance officer of the Union of Yemeni Students in Indonesia, I bring an engineer's
+              rigor and a communicator's clarity to every project.
+            </p>
+
+            <div class="info-card fade-up" style="margin-top: var(--s3);">
+              <h3>Education</h3>
+              <p class="lead" style="margin: 0;">
+                B.Eng. Information Engineering, UNTAG Surabaya (2022 to 2026).
+                Supervised Machine Learning Specialization, Stanford University on Coursera.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills as grouped icon rows. No percentages and no star ratings, on purpose:
+         unverifiable numbers invite doubt rather than confidence. -->
+    <section class="section" style="padding-top: var(--s5);">
+      <div class="container">
+        <p class="eyebrow">// skills</p>
+        <h2 class="section-title">Tools I work with</h2>
+        <div data-skills>
+          <p class="state-msg">Loading skills ...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <p class="eyebrow">// beyond code</p>
+        <h2 class="section-title">Teaching, leadership, and community</h2>
+        <div class="grid-cards grid-cards--3">
+          <div class="card fade-up">
+            <div class="card__body">
+              <h3 class="card__title">Teaching 90+ students</h3>
+              <p class="card__desc">
+                English speaking classes for around 40 students at UNTAG's ELCC, plus Arabic
+                lessons for more than 50 learners. Explaining hard ideas simply is a skill I
+                practise every week.
+              </p>
+            </div>
+          </div>
+          <div class="card fade-up">
+            <div class="card__body">
+              <h3 class="card__title">Leadership</h3>
+              <p class="card__desc">
+                Former public finance officer of the Union of Yemeni Students in Indonesia,
+                responsible for budgeting and transparent reporting to the student community.
+              </p>
+            </div>
+          </div>
+          <div class="card fade-up">
+            <div class="card__body">
+              <h3 class="card__title">Conferences and summer schools</h3>
+              <p class="card__desc">
+                I take part in international conferences and summer schools to stay close to
+                current research and to meet the people doing it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <p class="eyebrow">// updates</p>
+        <h2 class="section-title">What I'm working on</h2>
+        <ul class="updates-list" data-updates>
+          <li class="state-msg">Loading updates ...</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <ul class="footer__socials"></ul>
+      <p class="footer__colophon">
+        Designed in Figma, built by hand with HTML, CSS, and JavaScript. Mohammed Al-Shujaa © 2026
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/about.js"></script>
+</body>
+</html>

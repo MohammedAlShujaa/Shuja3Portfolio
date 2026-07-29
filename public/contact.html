@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact, Mohammed Al-Shujaa</title>
+  <meta name="description" content="Get in touch with Mohammed Al-Shujaa about ML and software internships, freelance projects, and research collaborations.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="navbar">
+    <nav class="container navbar__inner" aria-label="Main navigation">
+      <a class="wordmark" href="/index.html">shujaa<span class="wordmark__dot">.</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/portfolio.html">Portfolio</a></li>
+        <li><a href="/contact.html" aria-current="page">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">// contact</p>
+        <h1>Let's build something intelligent together.</h1>
+        <p class="lead" style="max-width: 62ch;" data-pitch>
+          Open to ML and software internships, freelance projects, and research collaborations.
+        </p>
+        <p class="lead" style="max-width: 62ch; margin-top: calc(var(--s1) * -1);">
+          Write to me in English, Arabic, or Bahasa Indonesia.
+        </p>
+
+        <div class="contact__grid" style="margin-top: var(--s5);">
+
+          <div>
+            <form class="info-card" data-contact-form novalidate>
+              <div class="field">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required autocomplete="name"
+                       placeholder="Your name" maxlength="120">
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required autocomplete="email"
+                       placeholder="you@example.com" maxlength="200">
+              </div>
+              <div class="field">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" required
+                          placeholder="What would you like to build or talk about?" maxlength="5000"></textarea>
+              </div>
+              <button class="btn btn--primary" type="submit">Send Message</button>
+              <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="form-success" data-form-success hidden tabindex="-1">
+              <h3>Message sent</h3>
+              <p style="margin: 0; color: var(--text-dim);">
+                Thank you for writing. I will reply within a day.
+              </p>
+            </div>
+          </div>
+
+          <aside class="info-card">
+            <h3>Direct</h3>
+            <ul class="contact-list" data-contact-list style="margin-top: var(--s3);">
+              <li class="state-msg">Loading ...</li>
+            </ul>
+          </aside>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <ul class="footer__socials"></ul>
+      <p class="footer__colophon">
+        Designed in Figma, built by hand with HTML, CSS, and JavaScript. Mohammed Al-Shujaa © 2026
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/contact.js"></script>
+</body>
+</html>

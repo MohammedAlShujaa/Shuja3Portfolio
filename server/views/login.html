@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin sign in</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <main class="login-wrap">
+    <form class="login-card" id="login-form">
+      <p class="eyebrow">// admin</p>
+      <h1>Sign in</h1>
+      <p class="muted" style="margin-top: 0;">Content management for the portfolio site.</p>
+
+      <div class="field" style="margin-top: 24px;">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="admin" autocomplete="username" required>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn btn--primary" type="submit" style="width: 100%; justify-content: center;">
+        Sign in
+      </button>
+      <p class="form-error" id="error" role="alert"></p>
+
+      <p class="mono" style="margin-bottom: 0;">
+        <a href="/index.html">Back to the site</a>
+      </p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('login-form');
+    const error = document.getElementById('error');
+    const button = form.querySelector('button');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      error.textContent = '';
+      button.disabled = true;
+      button.textContent = 'Signing in ...';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: form.username.value.trim(),
+            password: form.password.value
+          })
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error || 'Sign in failed.');
+        location.href = '/admin';
+      } catch (err) {
+        error.textContent = err.message;
+        button.disabled = false;
+        button.textContent = 'Sign in';
+      }
+    });
+  </script>
+</body>
+</html>

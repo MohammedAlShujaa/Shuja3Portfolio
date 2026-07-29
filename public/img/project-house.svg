@@ -1,0 +1,18 @@
+<!-- Placeholder for the real predicted vs actual scatter export. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#0E1730"/>
+  <line x1="80" y1="340" x2="560" y2="340" stroke="#1E293B" stroke-width="2"/>
+  <line x1="80" y1="60" x2="80" y2="340" stroke="#1E293B" stroke-width="2"/>
+  <line x1="80" y1="340" x2="560" y2="60" stroke="#A78BFA" stroke-width="2" stroke-dasharray="6 6" opacity="0.7"/>
+  <g fill="#22D3EE" opacity="0.75">
+    <circle cx="130" cy="315" r="5"/><circle cx="175" cy="292" r="5"/><circle cx="205" cy="268" r="5"/>
+    <circle cx="245" cy="255" r="5"/><circle cx="280" cy="228" r="5"/><circle cx="315" cy="215" r="5"/>
+    <circle cx="350" cy="185" r="5"/><circle cx="392" cy="168" r="5"/><circle cx="425" cy="140" r="5"/>
+    <circle cx="465" cy="122" r="5"/><circle cx="505" cy="95" r="5"/><circle cx="152" cy="330" r="5"/>
+    <circle cx="228" cy="285" r="5"/><circle cx="300" cy="245" r="5"/><circle cx="370" cy="205" r="5"/>
+    <circle cx="445" cy="160" r="5"/><circle cx="520" cy="115" r="5"/>
+  </g>
+  <text x="80" y="378" font-family="'JetBrains Mono', monospace" font-size="16" fill="#94A3B8">
+    predicted vs actual
+  </text>
+</svg>

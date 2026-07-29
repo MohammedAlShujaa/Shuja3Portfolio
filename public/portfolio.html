@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio, Mohammed Al-Shujaa</title>
+  <meta name="description" content="Selected machine learning, NLP, and web development projects by Mohammed Al-Shujaa, filterable by category.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="navbar">
+    <nav class="container navbar__inner" aria-label="Main navigation">
+      <a class="wordmark" href="/index.html">shujaa<span class="wordmark__dot">.</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/portfolio.html" aria-current="page">Portfolio</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">// projects</p>
+        <h1>Portfolio</h1>
+        <p class="lead" style="max-width: 60ch;">
+          Selected work across machine learning, NLP, and the web. Filter by category, or see
+          everything on
+          <a href="https://github.com/MohammedGamil19" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+
+        <!-- Category filter. JavaScript re-renders the grid in place, with no page reload. -->
+        <div class="filters" role="group" aria-label="Filter projects by category" style="margin-top: var(--s4);">
+          <button class="filter-pill" type="button" data-filter="All" aria-pressed="true">All</button>
+          <button class="filter-pill" type="button" data-filter="Machine Learning" aria-pressed="false">Machine Learning</button>
+          <button class="filter-pill" type="button" data-filter="NLP &amp; Data" aria-pressed="false">NLP &amp; Data</button>
+          <button class="filter-pill" type="button" data-filter="Web Development" aria-pressed="false">Web Development</button>
+        </div>
+
+        <div class="grid-cards grid-cards--2" data-projects aria-live="polite">
+          <p class="state-msg">Loading projects ...</p>
+        </div>
+
+        <p class="state-msg" data-empty hidden>No projects in this category yet.</p>
+
+        <p style="margin-top: var(--s5);">
+          <a class="btn btn--ghost" href="https://github.com/MohammedGamil19" target="_blank" rel="noopener noreferrer">
+            See all repositories on GitHub
+          </a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <ul class="footer__socials"></ul>
+      <p class="footer__colophon">
+        Designed in Figma, built by hand with HTML, CSS, and JavaScript. Mohammed Al-Shujaa © 2026
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/portfolio.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mohammed Al-Shujaa, Machine Learning &amp; Intelligent Systems Engineer</title>
+  <meta name="description" content="Mohammed Al-Shujaa builds machine learning and NLP systems, and explains them just as clearly. Information Engineering student at UNTAG Surabaya.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="navbar">
+    <nav class="container navbar__inner" aria-label="Main navigation">
+      <a class="wordmark" href="/index.html">shujaa<span class="wordmark__dot">.</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/index.html" aria-current="page">Home</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/portfolio.html">Portfolio</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <!-- Hero. The constellation echoes the t-SNE plot from the TripAdvisor NLP project. -->
+    <section class="hero">
+      <svg class="hero__constellation" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid slice"
+           aria-hidden="true" focusable="false">
+        <line x1="273.8" y1="156" x2="289" y2="124" stroke="var(--cyan)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="287.5" y1="123.9" x2="296" y2="97.6" stroke="var(--cyan)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="615.9" y1="180.7" x2="638.4" y2="193.9" stroke="var(--violet)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="711.2" y1="176.2" x2="753.6" y2="175.3" stroke="var(--violet)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="369.1" y1="280.5" x2="408.2" y2="298.9" stroke="var(--amber)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="364.1" y1="374.2" x2="372.1" y2="408.9" stroke="var(--amber)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="391.9" y1="337.1" x2="350.9" y2="357.1" stroke="var(--amber)" stroke-width="0.5" opacity="0.18"/>
+        <line x1="391.9" y1="337.1" x2="347.4" y2="326.6" stroke="var(--amber)" stroke-width="0.5" opacity="0.18"/>
+        <circle cx="95.2" cy="148.4" r="4.1" fill="var(--cyan)" opacity="0.32"/>
+        <circle cx="109.5" cy="177.3" r="2.4" fill="var(--cyan)" opacity="0.56"/>
+        <circle cx="273.8" cy="156" r="3.2" fill="var(--cyan)" opacity="0.44"/>
+        <circle cx="205.7" cy="284" r="3.5" fill="var(--cyan)" opacity="0.39"/>
+        <circle cx="287.5" cy="123.9" r="2.5" fill="var(--cyan)" opacity="0.75"/>
+        <circle cx="193.6" cy="145.5" r="1.7" fill="var(--cyan)" opacity="0.54"/>
+        <circle cx="193.5" cy="132.3" r="1.9" fill="var(--cyan)" opacity="0.5"/>
+        <circle cx="289" cy="124" r="4.1" fill="var(--cyan)" opacity="0.44"/>
+        <circle cx="295.6" cy="185.8" r="3.7" fill="var(--cyan)" opacity="0.63"/>
+        <circle cx="182.2" cy="98" r="3.3" fill="var(--cyan)" opacity="0.67"/>
+        <circle cx="234.8" cy="80.1" r="3.4" fill="var(--cyan)" opacity="0.31"/>
+        <circle cx="296" cy="97.6" r="3.3" fill="var(--cyan)" opacity="0.49"/>
+        <circle cx="181.8" cy="98.6" r="3.5" fill="var(--cyan)" opacity="0.45"/>
+        <circle cx="208.9" cy="164.2" r="3" fill="var(--cyan)" opacity="0.72"/>
+        <circle cx="85.3" cy="99.9" r="2.4" fill="var(--cyan)" opacity="0.35"/>
+        <circle cx="276.7" cy="153.4" r="3.2" fill="var(--cyan)" opacity="0.7"/>
+        <circle cx="33.4" cy="195" r="3" fill="var(--cyan)" opacity="0.45"/>
+        <circle cx="653.6" cy="121.6" r="3.9" fill="var(--violet)" opacity="0.47"/>
+        <circle cx="645.6" cy="253.6" r="2.8" fill="var(--violet)" opacity="0.36"/>
+        <circle cx="817.2" cy="143.2" r="3.7" fill="var(--violet)" opacity="0.44"/>
+        <circle cx="615.9" cy="180.7" r="3.9" fill="var(--violet)" opacity="0.72"/>
+        <circle cx="654.7" cy="137.2" r="1.7" fill="var(--violet)" opacity="0.61"/>
+        <circle cx="643.2" cy="139.2" r="3.2" fill="var(--violet)" opacity="0.58"/>
+        <circle cx="640.2" cy="193" r="2.2" fill="var(--violet)" opacity="0.54"/>
+        <circle cx="645.1" cy="219.1" r="3.6" fill="var(--violet)" opacity="0.41"/>
+        <circle cx="504" cy="300.7" r="3.9" fill="var(--violet)" opacity="0.46"/>
+        <circle cx="560.3" cy="232.2" r="2.8" fill="var(--violet)" opacity="0.25"/>
+        <circle cx="808.9" cy="285.7" r="2.5" fill="var(--violet)" opacity="0.68"/>
+        <circle cx="704.9" cy="152.7" r="2.7" fill="var(--violet)" opacity="0.38"/>
+        <circle cx="726.6" cy="227.3" r="3.8" fill="var(--violet)" opacity="0.3"/>
+        <circle cx="638.4" cy="193.9" r="4.1" fill="var(--violet)" opacity="0.63"/>
+        <circle cx="711.2" cy="176.2" r="1.7" fill="var(--violet)" opacity="0.38"/>
+        <circle cx="753.6" cy="175.3" r="2.6" fill="var(--violet)" opacity="0.74"/>
+        <circle cx="585.1" cy="224.6" r="2.7" fill="var(--violet)" opacity="0.36"/>
+        <circle cx="369.1" cy="280.5" r="4.1" fill="var(--amber)" opacity="0.33"/>
+        <circle cx="408.2" cy="298.9" r="2.5" fill="var(--amber)" opacity="0.74"/>
+        <circle cx="364.1" cy="374.2" r="3.7" fill="var(--amber)" opacity="0.33"/>
+        <circle cx="462.3" cy="295.4" r="2.2" fill="var(--amber)" opacity="0.46"/>
+        <circle cx="391.9" cy="337.1" r="3" fill="var(--amber)" opacity="0.62"/>
+        <circle cx="414.1" cy="470.8" r="2.5" fill="var(--amber)" opacity="0.28"/>
+        <circle cx="342.7" cy="283.7" r="2.8" fill="var(--amber)" opacity="0.52"/>
+        <circle cx="506.7" cy="357.4" r="3.6" fill="var(--amber)" opacity="0.32"/>
+        <circle cx="269.9" cy="321.2" r="2.8" fill="var(--amber)" opacity="0.58"/>
+        <circle cx="350.9" cy="357.1" r="1.8" fill="var(--amber)" opacity="0.41"/>
+        <circle cx="372.1" cy="408.9" r="2.1" fill="var(--amber)" opacity="0.54"/>
+        <circle cx="258.6" cy="400.7" r="2.9" fill="var(--amber)" opacity="0.51"/>
+        <circle cx="454.8" cy="321.5" r="3.7" fill="var(--amber)" opacity="0.26"/>
+        <circle cx="417.7" cy="344.7" r="3.3" fill="var(--amber)" opacity="0.67"/>
+        <circle cx="347.4" cy="326.6" r="1.7" fill="var(--amber)" opacity="0.62"/>
+      </svg>
+
+      <div class="container hero__inner">
+        <div class="hero-anim">
+          <p class="hero__eyebrow">مرحبا · Hello · Halo</p>
+          <h1 class="hero__name" data-hero-name>Mohammed Al-Shujaa</h1>
+          <p class="hero__subheading" data-hero-subheading></p>
+          <p class="hero__intro" data-hero-intro></p>
+          <div class="hero__ctas">
+            <a class="btn btn--primary" href="/portfolio.html" data-cta-primary>View My Projects</a>
+            <a class="btn btn--secondary" href="/contact.html" data-cta-secondary>Get in Touch</a>
+          </div>
+          <ul class="hero__socials" data-hero-socials></ul>
+        </div>
+
+        <div class="hero__photo-wrap">
+          <img class="hero__photo" src="/img/profile-placeholder.svg" alt="Mohammed Al-Shujaa, profile photo"
+               width="280" height="280" data-hero-photo>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="container">
+        <ul class="stats__list" data-stats></ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">// featured work</p>
+        <h2 class="section-title">Selected projects</h2>
+        <div class="grid-cards grid-cards--3" data-featured>
+          <p class="state-msg">Loading projects ...</p>
+        </div>
+        <p style="margin-top: var(--s4);">
+          <a class="btn btn--ghost" href="/portfolio.html">See all projects</a>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <ul class="footer__socials"></ul>
+      <p class="footer__colophon">
+        Designed in Figma, built by hand with HTML, CSS, and JavaScript. Mohammed Al-Shujaa © 2026
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- Placeholder for the real t-SNE cluster plot export. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#0E1730"/>
+  <g opacity="0.85">
+    <circle cx="150" cy="120" r="7" fill="#A78BFA"/><circle cx="182" cy="98" r="5" fill="#A78BFA"/>
+    <circle cx="128" cy="150" r="6" fill="#A78BFA"/><circle cx="170" cy="145" r="4" fill="#A78BFA"/>
+    <circle cx="196" cy="130" r="6" fill="#A78BFA"/><circle cx="140" cy="90" r="4" fill="#A78BFA"/>
+    <circle cx="450" cy="140" r="7" fill="#22D3EE"/><circle cx="480" cy="112" r="5" fill="#22D3EE"/>
+    <circle cx="425" cy="168" r="6" fill="#22D3EE"/><circle cx="468" cy="160" r="4" fill="#22D3EE"/>
+    <circle cx="500" cy="145" r="6" fill="#22D3EE"/><circle cx="442" cy="105" r="4" fill="#22D3EE"/>
+    <circle cx="300" cy="290" r="7" fill="#FBBF24"/><circle cx="332" cy="268" r="5" fill="#FBBF24"/>
+    <circle cx="278" cy="315" r="6" fill="#FBBF24"/><circle cx="320" cy="310" r="4" fill="#FBBF24"/>
+    <circle cx="348" cy="295" r="6" fill="#FBBF24"/><circle cx="292" cy="262" r="4" fill="#FBBF24"/>
+  </g>
+  <text x="32" y="368" font-family="'JetBrains Mono', monospace" font-size="17" fill="#94A3B8">
+    t-SNE word embeddings
+  </text>
+</svg>
