@@ -37,6 +37,10 @@ router.get('/updates', wrap(async (req, res) => {
   res.json(await db.listUpdates());
 }));
 
+router.get('/gallery', wrap(async (req, res) => {
+  res.json(await db.listGallery());
+}));
+
 // Contact form. The three fields are validated here as well as in the browser,
 // because client-side checks can always be skipped.
 router.post('/messages', wrap(async (req, res) => {

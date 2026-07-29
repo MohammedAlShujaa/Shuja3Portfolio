@@ -1,6 +1,7 @@
 -- Schema for the portfolio site. Postgres only, used for local development
 -- and for production on Vercel. Run through: npm run seed
 
+DROP TABLE IF EXISTS gallery;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS updates;
 DROP TABLE IF EXISTS projects;
@@ -73,6 +74,19 @@ CREATE TABLE messages (
   is_read    BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+-- Modeling gallery. A standalone photo page, separate from the ML portfolio.
+-- category is one of: Studio, Brand & Product, Casting, Editorial
+CREATE TABLE gallery (
+  id          SERIAL PRIMARY KEY,
+  title       TEXT,
+  category    TEXT NOT NULL DEFAULT 'Editorial',
+  image_url   TEXT NOT NULL,
+  thumb_url   TEXT,
+  credit      TEXT,
+  featured    BOOLEAN NOT NULL DEFAULT FALSE,
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
 -- Single admin account for this student project. Only the bcrypt hash is stored.
 CREATE TABLE admin_user (
   id            SERIAL PRIMARY KEY,
@@ -83,3 +97,4 @@ CREATE TABLE admin_user (
 CREATE INDEX idx_projects_category ON projects (category);
 CREATE INDEX idx_skills_group ON skills (group_name, sort_order);
 CREATE INDEX idx_messages_created ON messages (created_at DESC);
+CREATE INDEX idx_gallery_sort ON gallery (sort_order, id);

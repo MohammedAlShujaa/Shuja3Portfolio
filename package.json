@@ -8,6 +8,7 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "seed": "node server/seed.js",
+    "migrate:gallery": "node server/migrate-gallery.js",
     "hash": "node server/hash-password.js"
   },
   "engines": {

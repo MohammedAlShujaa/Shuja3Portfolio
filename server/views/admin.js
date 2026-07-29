@@ -596,6 +596,98 @@ document.getElementById('add-social').addEventListener('click', () => {
   });
 });
 
+/* ---------------------------------------------------------- gallery */
+
+const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
+
+const galleryFields = (g = {}) => [
+  { name: 'image_url', label: 'Full image URL', value: g.image_url, required: true, hint: 'The large web version, for example a Supabase public URL.' },
+  { name: 'thumb_url', label: 'Thumbnail URL (optional)', value: g.thumb_url, hint: 'A smaller version for the grid. Leave empty to reuse the full image.' },
+  { name: 'category', label: 'Category', type: 'select', options: GALLERY_CATEGORIES, value: g.category || GALLERY_CATEGORIES[0] },
+  { name: 'title', label: 'Title (optional)', value: g.title, hint: 'For example: MMS Casting, Batch 5.' },
+  { name: 'credit', label: 'Credit (optional)', value: g.credit, hint: 'For example: Photo by ..., MUA ..., for ... brand.' },
+  { name: 'featured', label: 'Featured (candidate for the cover)', type: 'checkbox', value: g.featured },
+  { name: 'sort_order', label: 'Sort order', type: 'number', value: g.sort_order ?? 0 }
+];
+
+async function loadGallery() {
+  const host = document.getElementById('gallery-list');
+  const gallery = await get('/gallery');
+  host.innerHTML = '';
+
+  if (!gallery.length) {
+    host.appendChild(el('p', 'muted', 'No photos yet. Add your first one.'));
+    return;
+  }
+
+  gallery.forEach((g) => {
+    const card = el('div', 'card');
+    const row = el('div', 'card__row');
+
+    const left = el('div');
+    left.style.cssText = 'display:flex;gap:12px;align-items:flex-start;';
+    const thumb = el('img');
+    thumb.src = g.thumb_url || g.image_url;
+    thumb.alt = g.title || 'Photo';
+    thumb.style.cssText = 'width:64px;height:64px;object-fit:cover;border:1px solid var(--border);border-radius:6px;background:var(--bg);';
+    left.appendChild(thumb);
+
+    const meta = el('div');
+    const head = el('div');
+    head.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;';
+    head.appendChild(el('span', 'pill', g.category));
+    if (g.featured) head.appendChild(el('span', 'pill pill--featured', 'Cover'));
+    meta.appendChild(head);
+    meta.appendChild(el('strong', null, g.title || '(no title)'));
+    meta.appendChild(el('p', 'mono', `sort ${g.sort_order}${g.credit ? ' · ' + g.credit : ''}`));
+    left.appendChild(meta);
+
+    const right = el('div', 'btn-row');
+    const edit = el('button', 'btn btn--ghost btn--sm', 'Edit');
+    edit.addEventListener('click', () => {
+      openEditor({
+        title: 'Edit photo',
+        fields: galleryFields(g),
+        onSubmit: async (values) => {
+          await put(`/gallery/${g.id}`, values);
+          toast('Photo saved.');
+          await loadGallery();
+        }
+      });
+    });
+    const remove = el('button', 'btn btn--danger btn--sm', 'Delete');
+    remove.addEventListener('click', async () => {
+      if (!confirmDelete(`this photo${g.title ? ' (' + g.title + ')' : ''}`)) return;
+      try {
+        await del(`/gallery/${g.id}`);
+        toast('Photo deleted.');
+        await loadGallery();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+    right.appendChild(edit);
+    right.appendChild(remove);
+
+    row.appendChild(left);
+    row.appendChild(right);
+    card.appendChild(row);
+    host.appendChild(card);
+  });
+}
+
+document.getElementById('add-gallery').addEventListener('click', () => {
+  openEditor({
+    title: 'Add photo',
+    fields: galleryFields({ sort_order: 99 }),
+    onSubmit: async (values) => {
+      await post('/gallery', values);
+      toast('Photo added.');
+      await loadGallery();
+    }
+  });
+});
+
 /* --------------------------------------------------------- messages */
 
 async function refreshUnreadBadge() {
@@ -685,7 +777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await Promise.all([
       loadProfile(), loadProjects(), loadSkills(),
-      loadUpdates(), loadSocials(), loadMessages(), refreshUnreadBadge()
+      loadUpdates(), loadSocials(), loadGallery(), loadMessages(), refreshUnreadBadge()
     ]);
   } catch (err) {
     toast(err.message, 'error');

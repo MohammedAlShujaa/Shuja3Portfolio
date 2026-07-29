@@ -169,6 +169,31 @@ const markMessageRead = (id, isRead) =>
 
 const deleteMessage = (id) => query('DELETE FROM messages WHERE id = $1', [id]);
 
+/* ---------------------------------------------------------------- gallery */
+
+const listGallery = () =>
+  rows('SELECT * FROM gallery ORDER BY sort_order, id');
+
+const getGalleryItem = (id) => one('SELECT * FROM gallery WHERE id = $1', [id]);
+
+const insertGalleryItem = (g) =>
+  one(
+    `INSERT INTO gallery (title, category, image_url, thumb_url, credit, featured, sort_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [g.title, g.category, g.image_url, g.thumb_url, g.credit, g.featured, g.sort_order]
+  );
+
+const updateGalleryItem = (id, g) =>
+  one(
+    `UPDATE gallery SET
+       title = $1, category = $2, image_url = $3, thumb_url = $4,
+       credit = $5, featured = $6, sort_order = $7
+     WHERE id = $8 RETURNING *`,
+    [g.title, g.category, g.image_url, g.thumb_url, g.credit, g.featured, g.sort_order, id]
+  );
+
+const deleteGalleryItem = (id) => query('DELETE FROM gallery WHERE id = $1', [id]);
+
 /* ------------------------------------------------------------ admin_user */
 
 const getAdminUser = (username) =>
@@ -202,5 +227,10 @@ module.exports = {
   countUnreadMessages,
   markMessageRead,
   deleteMessage,
+  listGallery,
+  getGalleryItem,
+  insertGalleryItem,
+  updateGalleryItem,
+  deleteGalleryItem,
   getAdminUser
 };

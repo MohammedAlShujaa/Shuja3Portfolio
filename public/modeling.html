@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mohammed Al-Shujaa, Modeling Portfolio</title>
+  <meta name="description" content="Modeling and photography portfolio of Mohammed Al-Shujaa: studio, brand, casting, and editorial work.">
+
+  <!-- Open Graph, so the link shows a real preview when shared on Instagram and elsewhere.
+       Update og:image to a real cover photo URL (a Supabase JPG) once you upload your photos. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mohammed Al-Shujaa, Modeling Portfolio">
+  <meta property="og:description" content="Studio, brand, casting, and editorial work.">
+  <meta property="og:image" content="https://shuja3-portfolio.vercel.app/img/model-placeholder-portrait.svg">
+  <meta property="og:url" content="https://shuja3-portfolio.vercel.app/modeling.html">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/modeling.css">
+</head>
+<body>
+
+  <header class="m-header">
+    <div class="wrap">
+      <p class="m-eyebrow">Model &middot; Surabaya</p>
+      <h1 class="m-name">Mohammed Al-Shujaa</h1>
+      <p class="m-tagline">Studio, brand, casting, and editorial work.</p>
+      <div class="m-links">
+        <a class="m-ig" href="https://www.instagram.com/shuj__a/" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.2 1 .5 1.4 1 .5.4.8.8 1 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-1 1.4-.4.5-.8.8-1.4 1-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-1-.5-.4-.8-.8-1-1.4-.2-.4-.4-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.2-.6.5-1 1-1.4.4-.5.8-.8 1.4-1 .4-.2 1-.4 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.07-1.1.05-1.7.24-2.1.4-.5.2-.9.44-1.3.84-.4.4-.64.8-.84 1.3-.16.4-.35 1-.4 2.1C2.6 9.5 2.6 9.9 2.6 12s0 2.5.07 3.7c.05 1.1.24 1.7.4 2.1.2.5.44.9.84 1.3.4.4.8.64 1.3.84.4.16 1 .35 2.1.4 1.2.07 1.6.07 4.7.07s3.5 0 4.7-.07c1.1-.05 1.7-.24 2.1-.4.5-.2.9-.44 1.3-.84.4-.4.64-.8.84-1.3.16-.4.35-1 .4-2.1.07-1.2.07-1.6.07-3.7s0-2.5-.07-3.7c-.05-1.1-.24-1.7-.4-2.1-.2-.5-.44-.9-.84-1.3-.4-.4-.8-.64-1.3-.84-.4-.16-1-.35-2.1-.4C15.5 4 15.1 4 12 4zm0 3.06A4.94 4.94 0 1 0 12 17a4.94 4.94 0 0 0 0-9.88zm0 8.14A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4zm6.3-8.34a1.15 1.15 0 1 1-2.3 0 1.15 1.15 0 0 1 2.3 0z"/></svg>
+          @shuj__a
+        </a>
+      </div>
+      <div class="m-rule"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="m-filters" data-filters aria-label="Filter photos by category"></nav>
+    <section class="m-grid" data-grid aria-live="polite">
+      <p class="m-empty">Loading ...</p>
+    </section>
+  </main>
+
+  <footer class="m-footer">
+    <div>Mohammed Al-Shujaa &copy; 2026</div>
+    <a class="m-back" href="/index.html">View my engineering portfolio</a>
+  </footer>
+
+  <!-- Full-screen lightbox -->
+  <div class="lightbox" data-lightbox aria-modal="true" role="dialog" aria-label="Photo viewer">
+    <button class="lb-close" type="button" aria-label="Close">&times;</button>
+    <button class="lb-prev" type="button" aria-label="Previous photo">&#8249;</button>
+    <img src="" alt="">
+    <button class="lb-next" type="button" aria-label="Next photo">&#8250;</button>
+    <div class="lightbox__cap" data-lightbox-cap></div>
+  </div>
+
+  <script src="/js/modeling.js"></script>
+</body>
+</html>

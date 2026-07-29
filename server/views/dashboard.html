@@ -28,6 +28,7 @@
       <button class="tab" role="tab" data-tab="skills" aria-selected="false">Skills</button>
       <button class="tab" role="tab" data-tab="updates" aria-selected="false">Updates</button>
       <button class="tab" role="tab" data-tab="socials" aria-selected="false">Social links</button>
+      <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Modeling</button>
       <button class="tab" role="tab" data-tab="messages" aria-selected="false">
         Messages<span class="tab__badge" id="unread-badge" hidden>0</span>
       </button>
@@ -159,6 +160,22 @@
         <button class="btn btn--primary" type="button" id="add-social">Add link</button>
       </div>
       <div id="socials-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- ------------------------------------------------------ gallery -->
+    <section class="panel" data-panel="gallery">
+      <div class="panel__head">
+        <div>
+          <h2>Modeling gallery</h2>
+          <p class="muted" style="margin: 0;">
+            Photos for the standalone modeling page at
+            <a href="/modeling.html" target="_blank" rel="noopener">/modeling.html</a>.
+            Use image URLs from your Supabase Storage bucket.
+          </p>
+        </div>
+        <button class="btn btn--primary" type="button" id="add-gallery">Add photo</button>
+      </div>
+      <div id="gallery-list"><p class="muted">Loading ...</p></div>
     </section>
 
     <!-- ----------------------------------------------------- messages -->

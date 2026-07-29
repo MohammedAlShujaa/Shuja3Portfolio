@@ -242,6 +242,43 @@ router.delete('/socials/:id', wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+/* ---------------------------------------------------------------- gallery */
+
+const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
+
+const galleryFrom = (b) => ({
+  title: String(b.title || '').trim(),
+  category: String(b.category || '').trim() || 'Editorial',
+  image_url: String(b.image_url || '').trim(),
+  thumb_url: String(b.thumb_url || '').trim(),
+  credit: String(b.credit || '').trim(),
+  featured: toBool(b.featured),
+  sort_order: toInt(b.sort_order, 0)
+});
+
+router.get('/gallery', wrap(async (req, res) => res.json(await db.listGallery())));
+
+router.post('/gallery', wrap(async (req, res) => {
+  const g = galleryFrom(req.body);
+  if (!g.image_url) return res.status(400).json({ error: 'An image URL is required.' });
+  if (!GALLERY_CATEGORIES.includes(g.category)) return res.status(400).json({ error: 'Pick a valid category.' });
+  res.status(201).json(await db.insertGalleryItem(g));
+}));
+
+router.put('/gallery/:id', wrap(async (req, res) => {
+  const g = galleryFrom(req.body);
+  if (!g.image_url) return res.status(400).json({ error: 'An image URL is required.' });
+  if (!GALLERY_CATEGORIES.includes(g.category)) return res.status(400).json({ error: 'Pick a valid category.' });
+  const updated = await db.updateGalleryItem(toInt(req.params.id), g);
+  if (!updated) return res.status(404).json({ error: 'Gallery item not found.' });
+  res.json(updated);
+}));
+
+router.delete('/gallery/:id', wrap(async (req, res) => {
+  await db.deleteGalleryItem(toInt(req.params.id));
+  res.json({ ok: true });
+}));
+
 /* -------------------------------------------------------------- messages */
 
 router.get('/messages', wrap(async (req, res) => res.json(await db.listMessages())));
