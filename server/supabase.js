@@ -43,7 +43,10 @@ async function uploadImage(buffer, contentType, name) {
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
+      // Some Supabase gateways check the apikey header as well as the bearer
+      // token, so send both to be safe. Both carry the service role key.
       Authorization: `Bearer ${serviceKey}`,
+      apikey: serviceKey,
       'Content-Type': contentType || 'image/jpeg',
       'cache-control': '3600',
       'x-upsert': 'true'
