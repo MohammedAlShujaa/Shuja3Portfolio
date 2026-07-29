@@ -45,6 +45,13 @@ app.use('/api/admin', adminRoutes);
 // dashboard straight to an anonymous visitor, bypassing the session check.
 const viewsDir = path.join(__dirname, 'views');
 
+// Never let the browser cache the admin UI, so a redeploy (new dashboard or
+// admin.js) is always picked up immediately instead of showing a stale page.
+app.use('/admin', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, must-revalidate');
+  next();
+});
+
 app.get('/admin/login', (req, res) => {
   if (req.session && req.session.isAdmin) return res.redirect('/admin');
   res.sendFile(path.join(viewsDir, 'login.html'));
