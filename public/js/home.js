@@ -31,11 +31,11 @@ async function renderHero() {
 
   const primary = document.querySelector('[data-cta-primary]');
   primary.textContent = profile.cta_primary_label || 'View My Projects';
-  primary.href = profile.cta_primary_href || '/portfolio.html';
+  primary.href = profile.cta_primary_href || '/portfolio';
 
   const secondary = document.querySelector('[data-cta-secondary]');
   secondary.textContent = profile.cta_secondary_label || 'Get in Touch';
-  secondary.href = profile.cta_secondary_href || '/contact.html';
+  secondary.href = profile.cta_secondary_href || '/contact';
 
   // CV button. Only shown once a resume link is set in the admin panel, so it is
   // never a dead button.
