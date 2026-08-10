@@ -6,6 +6,13 @@
       "includeFiles": "{public,server}/**"
     }
   },
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/about.html", "destination": "/about", "permanent": true },
+    { "source": "/portfolio.html", "destination": "/portfolio", "permanent": true },
+    { "source": "/contact.html", "destination": "/contact", "permanent": true },
+    { "source": "/modeling.html", "destination": "/modeling", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
   ]
