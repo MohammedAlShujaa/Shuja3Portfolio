@@ -34,6 +34,20 @@ async function renderContactInfo() {
     li.appendChild(wrap);
     list.appendChild(li);
   }
+
+  // CV download button, shown only when a resume link is set in the admin panel.
+  const aside = list.closest('.info-card');
+  const oldCv = aside && aside.querySelector('[data-cta-cv]');
+  if (oldCv) oldCv.remove();
+  if (aside && profile && profile.resume_url) {
+    const cv = el('a', 'btn btn--secondary', 'Shujaa CV');
+    cv.dataset.ctaCv = '';
+    cv.href = profile.resume_url;
+    cv.target = '_blank';
+    cv.rel = 'noopener noreferrer';
+    cv.style.marginTop = 'var(--s3)';
+    aside.appendChild(cv);
+  }
 }
 
 function initForm() {

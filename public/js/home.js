@@ -37,6 +37,20 @@ async function renderHero() {
   secondary.textContent = profile.cta_secondary_label || 'Get in Touch';
   secondary.href = profile.cta_secondary_href || '/contact.html';
 
+  // CV button. Only shown once a resume link is set in the admin panel, so it is
+  // never a dead button.
+  const ctas = document.querySelector('.hero__ctas');
+  const existingCv = ctas.querySelector('[data-cta-cv]');
+  if (existingCv) existingCv.remove();
+  if (profile.resume_url) {
+    const cv = el('a', 'btn btn--ghost', 'Shujaa CV');
+    cv.dataset.ctaCv = '';
+    cv.href = profile.resume_url;
+    cv.target = '_blank';
+    cv.rel = 'noopener noreferrer';
+    ctas.appendChild(cv);
+  }
+
   document.title = `${profile.name}, Machine Learning & Intelligent Systems Engineer`;
 }
 
