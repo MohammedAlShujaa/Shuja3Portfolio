@@ -69,10 +69,20 @@ app.get('/admin/admin.css', (req, res) => {
   res.type('text/css').sendFile(path.join(viewsDir, 'admin.css'));
 });
 
-// Locally, Express serves the static site. On Vercel this never runs for static
-// assets: /public is served by Vercel's static hosting and only /api and /admin
-// are rewritten to this handler.
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Clean URLs: send legacy /page.html requests to the extensionless /page (301),
+// so links that were already shared keep working and each page has one canonical
+// address. Runs before static so the redirect wins over serving the .html file.
+app.get(/.*\.html$/, (req, res) => {
+  let clean = req.path.replace(/\.html$/, '');
+  if (clean.endsWith('/index')) clean = clean.slice(0, -'/index'.length);
+  if (clean === '') clean = '/';
+  const query = req.originalUrl.slice(req.path.length);
+  res.redirect(301, clean + query);
+});
+
+// Serve the static site. The extensions option lets /about resolve to about.html,
+// so pages are reached without the .html extension.
+app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['html'] }));
 
 app.use((req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found.' });
