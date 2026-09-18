@@ -37,10 +37,21 @@ function initNav() {
   const links = document.querySelector('.nav-links');
   if (!toggle || !links) return;
 
+  const mqMobile = window.matchMedia('(max-width: 767px)');
+
+  // When the mobile menu is closed it sits off screen, so its links must not be
+  // reachable by keyboard or announced by screen readers. `inert` handles both.
+  // On desktop the menu is always visible, so it is never inert.
+  const applyInert = () => {
+    const closedOnMobile = mqMobile.matches && links.dataset.open !== 'true';
+    links.toggleAttribute('inert', closedOnMobile);
+  };
+
   const setOpen = (open) => {
     toggle.setAttribute('aria-expanded', String(open));
     links.dataset.open = String(open);
     document.body.style.overflow = open ? 'hidden' : '';
+    applyInert();
   };
 
   toggle.addEventListener('click', () => {
@@ -53,11 +64,11 @@ function initNav() {
     if (e.key === 'Escape') setOpen(false);
   });
 
-  // Reset the menu when the viewport grows past the mobile breakpoint,
-  // otherwise the body could stay locked at desktop width.
-  window.matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
-    if (e.matches) setOpen(false);
-  });
+  // Reset the menu whenever the viewport crosses the mobile breakpoint, so the
+  // body scroll lock and the inert state always match the current layout.
+  mqMobile.addEventListener('change', () => setOpen(false));
+
+  applyInert();
 }
 
 /* ------------------------------------------------ scroll reveals */

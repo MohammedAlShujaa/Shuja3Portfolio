@@ -72,6 +72,8 @@
                 <textarea id="message" name="message" required
                           placeholder="What would you like to build or talk about?" maxlength="5000"></textarea>
               </div>
+              <!-- Honeypot: hidden from people, tempting to bots. Real visitors leave it empty. -->
+              <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
               <button class="btn btn--primary" type="submit">Send Message</button>
               <p class="form-status" data-form-status role="status" aria-live="polite"></p>
             </form>

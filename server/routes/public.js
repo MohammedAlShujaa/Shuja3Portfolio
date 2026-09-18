@@ -44,6 +44,18 @@ router.get('/gallery', wrap(async (req, res) => {
 // Contact form. The three fields are validated here as well as in the browser,
 // because client-side checks can always be skipped.
 router.post('/messages', wrap(async (req, res) => {
+  // Honeypot: a hidden field no human sees. If it is filled, a bot did it, so
+  // pretend it worked and drop the message without storing anything.
+  if (String(req.body.website || '').trim()) {
+    return res.status(200).json({ ok: true });
+  }
+
+  // Throttle by IP so the inbox cannot be flooded.
+  const rl = await db.hitRateLimit(`contact:${req.ip || 'unknown'}`, 5, 600);
+  if (rl.limited) {
+    return res.status(429).json({ error: 'Too many messages sent from here. Please try again in a few minutes.' });
+  }
+
   const name = String(req.body.name || '').trim();
   const email = String(req.body.email || '').trim();
   const message = String(req.body.message || '').trim();

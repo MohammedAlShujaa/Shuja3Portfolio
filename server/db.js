@@ -194,6 +194,31 @@ const updateGalleryItem = (id, g) =>
 
 const deleteGalleryItem = (id) => query('DELETE FROM gallery WHERE id = $1', [id]);
 
+/* --------------------------------------------------------- rate limiting */
+
+/**
+ * Records one hit against a key within a rolling time window and reports whether
+ * it now exceeds maxCount. The counter resets automatically once the window has
+ * elapsed. Atomic, so it is safe across concurrent serverless instances.
+ */
+const hitRateLimit = async (key, maxCount, windowSeconds) => {
+  const row = await one(
+    `INSERT INTO rate_limit (key, count, window_start)
+     VALUES ($1, 1, NOW())
+     ON CONFLICT (key) DO UPDATE SET
+       count = CASE
+         WHEN rate_limit.window_start < NOW() - make_interval(secs => $2) THEN 1
+         ELSE rate_limit.count + 1 END,
+       window_start = CASE
+         WHEN rate_limit.window_start < NOW() - make_interval(secs => $2) THEN NOW()
+         ELSE rate_limit.window_start END
+     RETURNING count,
+       GREATEST(EXTRACT(EPOCH FROM (window_start + make_interval(secs => $2) - NOW()))::int, 0) AS retry_after`,
+    [key, windowSeconds]
+  );
+  return { limited: row.count > maxCount, count: row.count, retryAfter: row.retry_after };
+};
+
 /* ------------------------------------------------------------ admin_user */
 
 const getAdminUser = (username) =>
@@ -232,5 +257,6 @@ module.exports = {
   insertGalleryItem,
   updateGalleryItem,
   deleteGalleryItem,
+  hitRateLimit,
   getAdminUser
 };
