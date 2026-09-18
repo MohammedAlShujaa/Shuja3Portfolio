@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 
-Sitemap: https://shuja3-portfolio.vercel.app/sitemap.xml
+Sitemap: https://shuja3.site/sitemap.xml
