@@ -14,6 +14,8 @@ const cookieSession = require('cookie-session');
 
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
+const db = require('./db');
+const { renderPage, NEEDS } = require('./render');
 const { requireAuthPage } = require('./auth');
 
 const app = express();
@@ -98,6 +100,38 @@ app.get('/admin/admin.js', requireAuthPage, (req, res) => {
 app.get('/admin/admin.css', (req, res) => {
   res.type('text/css').sendFile(path.join(viewsDir, 'admin.css'));
 });
+
+// Server-side rendering for the public pages. The content is injected into the
+// HTML before it is sent so crawlers and link previews see real text instead of
+// a "Loading ..." placeholder. The client JavaScript still runs on top. If the
+// database is unreachable, fall through to serving the static file so the page
+// still loads and the client renders it.
+async function collect(names) {
+  const out = {};
+  await Promise.all(names.map(async (n) => {
+    if (n === 'profile') out.profile = await db.getProfile();
+    else if (n === 'projects') out.projects = await db.listProjects();
+    else if (n === 'socials') out.socials = await db.listSocials();
+    else if (n === 'skills') out.skills = await db.listSkills();
+    else if (n === 'updates') out.updates = await db.listUpdates();
+  }));
+  return out;
+}
+
+const ssrRoute = (name) => async (req, res, next) => {
+  try {
+    const data = await collect(NEEDS[name]);
+    res.type('html').send(renderPage(name, data));
+  } catch (err) {
+    console.error(`SSR failed for ${name}:`, err.message);
+    next();
+  }
+};
+
+app.get('/', ssrRoute('index'));
+app.get('/about', ssrRoute('about'));
+app.get('/portfolio', ssrRoute('portfolio'));
+app.get('/contact', ssrRoute('contact'));
 
 // Clean URLs: send legacy /page.html requests to the extensionless /page (301),
 // so links that were already shared keep working and each page has one canonical
