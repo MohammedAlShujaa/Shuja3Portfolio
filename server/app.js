@@ -118,13 +118,16 @@ async function collect(names) {
   return out;
 }
 
+const PAGE_FILE = { index: 'home.html', about: 'about.html', portfolio: 'portfolio.html', contact: 'contact.html' };
+
 const ssrRoute = (name) => async (req, res, next) => {
   try {
     const data = await collect(NEEDS[name]);
     res.type('html').send(renderPage(name, data));
   } catch (err) {
+    // Fall back to the raw template so the page still loads (the client renders it).
     console.error(`SSR failed for ${name}:`, err.message);
-    next();
+    res.sendFile(path.join(__dirname, '..', 'public', PAGE_FILE[name]));
   }
 };
 
@@ -132,6 +135,9 @@ app.get('/', ssrRoute('index'));
 app.get('/about', ssrRoute('about'));
 app.get('/portfolio', ssrRoute('portfolio'));
 app.get('/contact', ssrRoute('contact'));
+
+// The home template was renamed to home.html; send its old paths to the canonical /.
+app.get(['/home', '/home.html'], (req, res) => res.redirect(301, '/'));
 
 // Clean URLs: send legacy /page.html requests to the extensionless /page (301),
 // so links that were already shared keep working and each page has one canonical

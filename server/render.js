@@ -22,9 +22,14 @@ const path = require('path');
 const publicDir = path.join(__dirname, '..', 'public');
 const templateCache = {};
 
+// The home template lives at home.html, not index.html, so that Vercel does not
+// serve it as a static directory index and bypass server-side rendering.
+const TEMPLATE_FILE = { index: 'home', about: 'about', portfolio: 'portfolio', contact: 'contact' };
+
 function template(name) {
   if (!templateCache[name]) {
-    templateCache[name] = fs.readFileSync(path.join(publicDir, `${name}.html`), 'utf8');
+    const file = TEMPLATE_FILE[name] || name;
+    templateCache[name] = fs.readFileSync(path.join(publicDir, `${file}.html`), 'utf8');
   }
   return templateCache[name];
 }
