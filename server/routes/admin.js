@@ -25,6 +25,13 @@ const toInt = (v, fallback = 0) => {
 /* ------------------------------------------------------------------ auth */
 
 router.post('/login', wrap(async (req, res) => {
+  // Throttle by IP so passwords cannot be brute forced.
+  const rl = await db.hitRateLimit(`login:${req.ip || 'unknown'}`, 12, 900);
+  if (rl.limited) {
+    const mins = Math.ceil(rl.retryAfter / 60);
+    return res.status(429).json({ error: `Too many sign in attempts. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.` });
+  }
+
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '');
   const ok = await verifyLogin(username, password);

@@ -19,6 +19,36 @@ const { requireAuthPage } = require('./auth');
 const app = express();
 
 app.set('trust proxy', 1);
+
+// Security headers. A Content Security Policy limits where scripts, styles,
+// fonts, images, and frames may come from, which is defence in depth on top of
+// the fact that all database content is inserted as text, never as HTML. Inline
+// scripts and styles are allowed because the static pages use them and cannot
+// carry a per-request nonce; everything external is restricted to the CDNs the
+// site actually uses (Google Fonts, Devicon) plus Supabase for images.
+const CSP = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "img-src 'self' data: blob: https:",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+  "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+  "connect-src 'self'"
+].join('; ');
+
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 

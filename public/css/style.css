@@ -721,6 +721,16 @@ p { margin: 0 0 var(--s2); }
 .field input::placeholder,
 .field textarea::placeholder { color: #64748B; }
 
+/* Honeypot field: kept in the DOM for bots, moved off-screen for people.
+   Not display:none, because some bots skip hidden fields. */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .form-status {
   margin-top: var(--s2);
   font-size: 0.9rem;

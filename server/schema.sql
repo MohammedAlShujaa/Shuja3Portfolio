@@ -1,6 +1,7 @@
 -- Schema for the portfolio site. Postgres only, used for local development
 -- and for production on Vercel. Run through: npm run seed
 
+DROP TABLE IF EXISTS rate_limit;
 DROP TABLE IF EXISTS gallery;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS updates;
@@ -85,6 +86,15 @@ CREATE TABLE gallery (
   credit      TEXT,
   featured    BOOLEAN NOT NULL DEFAULT FALSE,
   sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
+-- Throttles login attempts and contact-form submissions, keyed by a string such
+-- as "login:<ip>". A shared table is used because serverless instances cannot
+-- share in-memory counters.
+CREATE TABLE rate_limit (
+  key          TEXT PRIMARY KEY,
+  count        INTEGER NOT NULL DEFAULT 0,
+  window_start TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Single admin account for this student project. Only the bcrypt hash is stored.
