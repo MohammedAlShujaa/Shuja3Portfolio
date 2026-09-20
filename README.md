@@ -20,7 +20,7 @@ The four public pages fetch their content from JSON routes under `/api`, so anyt
 
 ```
 public/              static site served by Vercel (or by Express locally)
-  index.html         Home
+  home.html          Home
   about.html         About
   portfolio.html     Portfolio
   contact.html       Contact
@@ -144,7 +144,7 @@ Both run a normal long-lived Node process, so `npm start` works as is and file u
 
 | Requirement | Where |
 |---|---|
-| Home: photo, intro, headline with name and role, call to action | `public/index.html` |
+| Home: photo, intro, headline with name and role, call to action | `public/home.html` |
 | About: title, background and education paragraph, skills as icon rows | `public/about.html` |
 | Portfolio: cards with descriptions, links, category filter | `public/portfolio.html` |
 | Contact: name/email/message form, social links | `public/contact.html` |
