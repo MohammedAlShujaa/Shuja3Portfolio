@@ -100,7 +100,8 @@ function initReveals() {
 
 async function initFooter() {
   const list = document.querySelector('.footer__socials');
-  if (!list) return;
+  // Skip when the server already rendered the links.
+  if (!list || list.children.length) return;
   try {
     const socials = await api('/api/socials');
     list.innerHTML = '';

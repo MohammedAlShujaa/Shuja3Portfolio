@@ -847,22 +847,16 @@ p { margin: 0 0 var(--s2); }
 }
 .fade-up.is-visible { opacity: 1; transform: none; }
 
-/* Staggered one-time hero entrance. */
-.hero-anim > * {
-  opacity: 0;
-  animation: heroUp 500ms var(--ease) forwards;
-}
-.hero-anim > *:nth-child(1) { animation-delay: 60ms; }
-.hero-anim > *:nth-child(2) { animation-delay: 140ms; }
-.hero-anim > *:nth-child(3) { animation-delay: 220ms; }
-.hero-anim > *:nth-child(4) { animation-delay: 300ms; }
-.hero-anim > *:nth-child(5) { animation-delay: 380ms; }
-.hero-anim > *:nth-child(6) { animation-delay: 460ms; }
+/* Hero opening sequence (js/hero-motion.js). The hero stays hidden only until
+   the timeline has set its start state; an inline script in home.html adds this
+   class only when motion is allowed, and removes it after 3s if the scripts
+   never load, so content can never stay hidden. */
+.motion-pending .hero__constellation,
+.motion-pending .hero__copy,
+.motion-pending .hero__photo-wrap { visibility: hidden; }
 
-@keyframes heroUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
-}
+/* Letters of the split name; inline-block so they can move. */
+.hero__name .char { display: inline-block; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -874,7 +868,6 @@ p { margin: 0 0 var(--s2); }
     transition-duration: 0.01ms !important;
   }
   .fade-up { opacity: 1; transform: none; }
-  .hero-anim > * { opacity: 1; animation: none; }
   .btn:hover, .card:hover, .skill:hover { transform: none; }
 }
 
