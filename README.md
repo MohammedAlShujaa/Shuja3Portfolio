@@ -130,7 +130,7 @@ Sign in at http://localhost:3000/admin.
 
 ## Motion
 
-The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. Visitors who prefer reduced motion see the finished hero straight away.
+The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. After that the constellation stays live: each cluster drifts slowly, the clusters move at different speeds as the hero scrolls away, and points near the mouse are pushed aside with their links stretching to follow. The live layers pause while the hero is off screen. Visitors who prefer reduced motion see the finished hero straight away, with nothing moving.
 
 GSAP is served from this site rather than a CDN, because the Content Security Policy only allows scripts from the site itself. The files live in a versioned folder so they can be cached for a year. To upgrade GSAP:
 
