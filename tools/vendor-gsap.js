@@ -17,6 +17,7 @@ const path = require('path');
 
 const FILES = [
   'gsap.min.js',
+  'ScrollTrigger.min.js',
   'SplitText.min.js',
   'DrawSVGPlugin.min.js',
   'ScrambleTextPlugin.min.js'
