@@ -332,30 +332,15 @@ p { margin: 0 0 var(--s2); }
   letter-spacing: -0.03em;
 }
 
-/* ------------------------------------------------------ statement */
-
-/* One sentence, very large: the subheading, given a section of its own. */
-.statement {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: var(--s7) 0;
-}
-.statement__text {
-  margin: 0;
-  max-width: 12ch;
+.hero__subheading {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.4rem, 6.6vw, 5.6rem);
-  line-height: 1.04;
-  letter-spacing: -0.035em;
+  font-weight: 500;
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  line-height: 1.3;
   color: var(--text);
+  margin: 0 0 var(--s3);
 }
-@media (max-width: 900px) {
-  /* Tall screens: the network forms above the sentence. */
-  .statement { align-items: flex-end; padding-bottom: 12vh; }
-}
-.statement__text .grad {
+.hero__subheading .grad {
   background: linear-gradient(90deg, var(--cyan), var(--violet));
   -webkit-background-clip: text;
   background-clip: text;
