@@ -15,7 +15,12 @@
 
    Only transforms and opacity are animated, and the live layers pause while
    the hero is off screen. Visitors who prefer reduced motion get the finished
-   hero with no animation at all. */
+   hero with no animation at all.
+
+   Where the WebGL data field runs (js/data-field.js), it replaces the SVG
+   constellation: the opening animates the field's own blob-to-clusters
+   moment instead, and the field handles drift, the mouse, and scrolling, so
+   the SVG live layers below are skipped. */
 
 (() => {
   const root = document.documentElement;
@@ -40,8 +45,8 @@
   const eyebrow = q('.hero__eyebrow')[0];
   const greetings = q('[data-greet]');
   const name = q('.hero__name')[0];
+  const field = window.dataField && window.dataField.active ? window.dataField : null;
   const followers = [
-    ...q('.hero__subheading'),
     ...q('.hero__intro'),
     ...q('.hero__ctas > *'),
     ...q('.hero__socials')
@@ -80,25 +85,32 @@
       }
     });
 
-    // 1. Points fade in where they will start: one mixed blob in the middle.
-    tl.from(points, {
-      opacity: 0,
-      duration: 0.4,
-      ease: 'power1.out',
-      stagger: { amount: 0.3, from: 'random' }
-    }, 0);
+    if (field) {
+      // The data field: its points fade in as one mixed blob, then separate
+      // into the three clusters.
+      tl.to(field.state, { fade: 1, duration: 0.5, ease: 'power1.out' }, 0);
+      tl.to(field.state, { intro: 1, duration: 1.5, ease: 'power3.inOut' }, 0.15);
+    } else {
+      // 1. Points fade in where they will start: one mixed blob in the middle.
+      tl.from(points, {
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power1.out',
+        stagger: { amount: 0.3, from: 'random' }
+      }, 0);
 
-    // 2. Clustering: each point travels from the blob to its real position.
-    tl.from(points, {
-      x: (i, el) => cx - el.cx.baseVal.value + gsap.utils.random(-140, 140),
-      y: (i, el) => cy - el.cy.baseVal.value + gsap.utils.random(-80, 80),
-      duration: 1.3,
-      ease: 'power3.inOut',
-      stagger: { amount: 0.25, from: 'random' }
-    }, 0.15);
+      // 2. Clustering: each point travels from the blob to its real position.
+      tl.from(points, {
+        x: (i, el) => cx - el.cx.baseVal.value + gsap.utils.random(-140, 140),
+        y: (i, el) => cy - el.cy.baseVal.value + gsap.utils.random(-80, 80),
+        duration: 1.3,
+        ease: 'power3.inOut',
+        stagger: { amount: 0.25, from: 'random' }
+      }, 0.15);
 
-    // 3. Links between neighbours draw in once the clusters settle.
-    tl.from(links, { drawSVG: 0, duration: 0.6, ease: 'power2.inOut', stagger: 0.06 }, 1.2);
+      // 3. Links between neighbours draw in once the clusters settle.
+      tl.from(links, { drawSVG: 0, duration: 0.6, ease: 'power2.inOut', stagger: 0.06 }, 1.2);
+    }
 
     // Greeting: Arabic fades in (scrambling would break its joined letters);
     // English and Indonesian resolve out of binary, a nod to the ML theme.
@@ -249,7 +261,13 @@
     mm.add('(prefers-reduced-motion: no-preference)', (context) => {
       let stopLive = null;
       context.add('startLive', () => {
-        stopLive = live();
+        if (field) {
+          // Skipped intro (seen this session): show the clusters straight away.
+          field.state.fade = 1;
+          field.state.intro = 1;
+        } else {
+          stopLive = live();
+        }
         // Lets the rest of the page (js/scroll-story.js) start its motion only
         // after the hero has finished, so the two never compete for attention.
         root.dataset.heroSettled = 'true';

@@ -332,15 +332,30 @@ p { margin: 0 0 var(--s2); }
   letter-spacing: -0.03em;
 }
 
-.hero__subheading {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
-  line-height: 1.3;
-  color: var(--text);
-  margin: 0 0 var(--s3);
+/* ------------------------------------------------------ statement */
+
+/* One sentence, very large: the subheading, given a section of its own. */
+.statement {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: var(--s7) 0;
 }
-.hero__subheading .grad {
+.statement__text {
+  margin: 0;
+  max-width: 12ch;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 6.6vw, 5.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--text);
+}
+@media (max-width: 900px) {
+  /* Tall screens: the network forms above the sentence. */
+  .statement { align-items: flex-end; padding-bottom: 12vh; }
+}
+.statement__text .grad {
   background: linear-gradient(90deg, var(--cyan), var(--violet));
   -webkit-background-clip: text;
   background-clip: text;
@@ -1019,6 +1034,23 @@ p { margin: 0 0 var(--s2); }
 .motion-pending .hero__constellation,
 .motion-pending .hero__copy,
 .motion-pending .hero__photo-wrap { visibility: hidden; }
+
+/* The data field (js/data-field.js): a fixed WebGL canvas behind the homepage.
+   The page's own content sits above it. Where it runs, it replaces the hero's
+   SVG constellation. */
+.data-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100lvh;
+  z-index: 0;
+  pointer-events: none;
+}
+.has-field main,
+.has-field .footer { position: relative; z-index: 1; }
+.has-field .hero__constellation { display: none; }
 
 /* Letters of the split name; inline-block so they can move. */
 .hero__name .char { display: inline-block; }
