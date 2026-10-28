@@ -22,16 +22,16 @@ const PROFILE = {
     'I build ML and NLP systems, and explain them just as clearly. Information Engineering student at UNTAG Surabaya, Stanford-certified in supervised machine learning.',
   photo_url: '/img/profile-placeholder.svg',
   cta_primary_label: 'View My Projects',
-  cta_primary_href: '/portfolio.html',
+  cta_primary_href: '/portfolio',
   cta_secondary_label: 'Get in Touch',
-  cta_secondary_href: '/contact.html',
+  cta_secondary_href: '/contact',
   location: 'Surabaya, Indonesia (remote friendly)',
   availability: 'Open to ML and software internships, freelance projects, and research collaborations.',
   resume_url: ''
 };
 
 const SOCIALS = [
-  { platform: 'GitHub', url: 'https://github.com/MohammedGamil19', icon: 'github' },
+  { platform: 'GitHub', url: 'https://github.com/MohammedAlShujaa', icon: 'github' },
   { platform: 'LinkedIn', url: 'https://www.linkedin.com/in/mohammed-al-shujaa-071042258', icon: 'linkedin' },
   { platform: 'Email', url: 'mailto:khaledmajeedsaif@gmail.com', icon: 'mail' }
 ];

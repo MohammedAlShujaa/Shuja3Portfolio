@@ -12,9 +12,11 @@ Built on the "Neural Navy" design system: a dark navy palette, Space Grotesk and
 | Backend | Node.js, Express |
 | Database | PostgreSQL (Neon / Vercel Postgres) via the `pg` driver |
 | Auth | bcrypt password hash, stateless signed cookie session (`cookie-session`) |
-| Uploads | multer to `/public/uploads` (local only, see notes) |
+| Uploads | Modeling photos go to Supabase Storage. Other uploads use multer to `/public/uploads` (local only, see notes) |
 
-The four public pages fetch their content from JSON routes under `/api`, so anything saved in the admin panel appears on the live site immediately.
+The four main pages are rendered on the server with their content filled in from the database (`server/render.js`), so crawlers and link previews see real text. The browser scripts then refresh the same content from JSON routes under `/api`. Anything saved in the admin panel appears on the live site immediately.
+
+A fifth page, `/modeling`, is a standalone photo gallery with its own dark theme. It is not in the main navigation and loads its photos from `/api/gallery`.
 
 ## Project structure
 
@@ -24,22 +26,29 @@ public/              static site served by Vercel (or by Express locally)
   about.html         About
   portfolio.html     Portfolio
   contact.html       Contact
+  modeling.html      standalone modeling gallery (css/modeling.css, js/modeling.js)
   css/style.css      the Neural Navy design system
   js/                main.js (shared) + one script per page
-  img/               placeholder artwork, replace with real exports
+  img/               profile photo, project thumbnails, gallery photos
   uploads/           images uploaded through the admin panel (local only)
 server/
-  app.js             builds and exports the Express app
+  app.js             builds and exports the Express app, security headers, page routes
   index.js           local entry point (npm start)
+  render.js          server-side rendering of the four main pages
   db.js              the only module that touches the Postgres driver
   schema.sql         table definitions
-  seed.js            creates the schema and inserts the real content
+  seed.js            DESTRUCTIVE reset: drops every table, then inserts the real content
+  migrate-gallery.js non-destructive: adds the gallery table
+  migrate-security.js non-destructive: adds the rate_limit table
   auth.js            login check and the two route guards
+  supabase.js        uploads modeling photos to Supabase Storage
+  hash-password.js   prints a bcrypt hash (npm run hash)
   routes/public.js   read-only JSON + the contact form endpoint
   routes/admin.js    login and the authenticated CRUD routes
   views/             admin login, dashboard, admin.js, admin.css
+tools/resize-photos.py  batch-resizes photos into web and thumbnail versions before upload
 api/index.js         Vercel serverless entry point
-vercel.json          rewrites /api/* and /admin/* to the Express handler
+vercel.json          sends every request to the Express handler, plus legacy .html redirects
 ```
 
 Admin pages live in `server/views`, not in `public`, so static hosting cannot serve the dashboard to an anonymous visitor and bypass the session check.
@@ -88,6 +97,8 @@ SESSION_SECRET=paste-a-long-random-string
 PORT=3000
 ```
 
+To upload modeling photos from the admin panel, also set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_BUCKET` (a public bucket, default `photos`). See `.env.example`. Leave them empty to paste image URLs instead.
+
 Generate a session secret with:
 
 ```bash
@@ -103,7 +114,14 @@ npm run seed     # creates the tables and inserts the real content
 npm start        # http://localhost:3000
 ```
 
-`npm run seed` drops every table first, so treat it as a reset. It also creates the single admin account (username `admin`) using `ADMIN_PASSWORD`.
+**`npm run seed` drops every table first, including the gallery and every contact message.** Treat it as a reset and only run it on a new or throwaway database. It also creates the single admin account (username `admin`) using `ADMIN_PASSWORD`.
+
+To bring an existing database up to date without losing data, run the non-destructive migrations instead:
+
+```bash
+npm run migrate:gallery    # adds the gallery table (and sample rows if it is empty)
+npm run migrate:security   # adds the rate_limit table
+```
 
 Sign in at http://localhost:3000/admin.
 
@@ -116,25 +134,26 @@ Everything under `/admin`, and every POST, PUT, and DELETE route, requires a ses
 - **Skills**: add, edit, delete, and reorder within the four groups.
 - **Updates**: the feed shown on the About page.
 - **Social links**: shown in the hero, footer, and contact page.
+- **Modeling**: gallery photos with category, credit, featured toggle, and sort order. Photos are resized in the browser and uploaded to Supabase Storage.
 - **Messages**: contact form submissions, with mark read/unread, delete, and an unread badge.
 
-Auth is deliberately simple for a student project: one account, a bcrypt hash, and a signed cookie. It has no rate limiting, password reset, or two-factor. The password only ever lives in the `ADMIN_PASSWORD` environment variable, never in the repository.
+Auth is deliberately simple for a student project: one account, a bcrypt hash, and a signed cookie. Login attempts are rate limited per IP (12 per 15 minutes), and the contact form is rate limited (5 per 10 minutes) and has a hidden honeypot field. There is no password reset or two-factor. The password only ever lives in the `ADMIN_PASSWORD` environment variable, never in the repository.
 
 ## Deploy to Vercel
 
 1. Push the repository to GitHub.
 2. Import it at https://vercel.com/new.
 3. In the project's **Storage** tab, create a Postgres store and connect it. Vercel injects `POSTGRES_URL` automatically.
-4. In **Settings, Environment Variables**, add `ADMIN_PASSWORD` and `SESSION_SECRET`.
-5. Seed the production database once. Copy `POSTGRES_URL` from the Storage tab into your local `.env`, then run `npm run seed` from your machine against it. (Alternatively `vercel env pull .env` to fetch every variable at once.)
+4. In **Settings, Environment Variables**, add `ADMIN_PASSWORD` and `SESSION_SECRET`, and the three `SUPABASE_*` variables if you want in-admin photo upload.
+5. Seed the production database **once, when it is empty**. Copy `POSTGRES_URL` from the Storage tab into your local `.env`, then run `npm run seed` from your machine against it. (Alternatively `vercel env pull .env` to fetch every variable at once.) Never re-run the seed against a live database: it wipes all content, photos, and messages. Use the `migrate:*` scripts for later schema changes.
 6. Deploy.
 
-`vercel.json` rewrites `/api/*` and `/admin/*` to the Express handler in `api/index.js`; everything in `public/` is served by Vercel's static hosting.
+`vercel.json` sends every request to the Express handler in `api/index.js`, which renders the pages, serves the API and admin, and serves the files in `public/`. It also 301-redirects legacy `.html` URLs to clean paths.
 
 Two serverless constraints are already handled in the code:
 
 - **Sessions.** `express-session`'s default memory store resets on every invocation, which would sign the admin out constantly. This project uses a stateless signed cookie instead, so login survives across serverless invocations.
-- **File uploads.** Vercel's filesystem is read only, so `multer` writing to disk cannot work in production. The upload route returns a clear error there, and pasting an image URL is the supported path. Persistent uploads on Vercel would need a blob store (Vercel Blob or S3) as a follow-up.
+- **File uploads.** Vercel's filesystem is read only, so `multer` writing to disk cannot work in production. The general upload route returns a clear error there, and pasting an image URL is the supported path. Modeling photos avoid this by uploading to Supabase Storage.
 
 ### Deploying to Render or Railway instead
 
@@ -155,7 +174,7 @@ Skills are shown as grouped icon rows with names, never as percentage bars or st
 
 ## Notes and TODO
 
-- **Replace the placeholder artwork in `public/img/`.** The profile photo and the five project thumbnails are on-theme SVG stand-ins, not real images. Swap in a real head-and-shoulders photo (640x640) and real exports: the t-SNE cluster plot, the predicted vs actual scatter, a TIMS optimization window, and the IT Inventory dashboard. Export plots on a dark background so they glow on `#0B1121`. You can change all of these from the admin panel without touching code.
+- **Replace the remaining placeholder artwork in `public/img/`.** Most project thumbnails are still on-theme SVG stand-ins (StudyHub already has a real screenshot). Swap in real exports: the t-SNE cluster plot, the predicted vs actual scatter, a TIMS optimization window, and the IT Inventory dashboard. Export plots on a dark background so they glow on `#0B1121`. You can change all of these from the admin panel without touching code.
 - **A live demo is the biggest credibility win available.** Wrap the House Price model in Streamlit or Gradio, deploy free on Hugging Face Spaces, and paste the URL into that project's "Live demo URL" field in the admin.
 - Cards with no link show "Private work, available on request" rather than a dead `#` link. If you host the TIMS thesis or journal PDF, add it as the project's live URL.
 - Devicon supplies the skill icons via CDN. Tools without a Devicon glyph (NLTK, n8n, SQL, Excel, Power BI) fall back to an initials tile automatically.
