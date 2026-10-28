@@ -3,7 +3,7 @@
 
      0  hero         three t-SNE clusters (the opening plays a mixed blob
                      separating into them, driven by js/hero-motion.js)
-     1  statement    the points flow into a neural network: layers of nodes
+     1  hero leaving the points flow into a neural network: layers of nodes
                      joined by streams of points
      2  stats        the network dissolves into a predicted-vs-actual scatter
                      plot with its fitted line and axes
@@ -169,8 +169,8 @@
       ? [[0.16 * A, 0.1], [0.16 * A, 0.1], [0.4 * A, 0.04]]
       : [[0.09 * A, 0.16], [0.1 * A, 0.12], [0.24 * A, 0.1]];
 
-    // Statement: a neural network, beside the text on wide screens and
-    // above it on tall ones.
+    // Neural network: on the right on wide screens (the hero's text is on the
+    // left as it scrolls away), in the upper part of tall screens.
     const box = portrait
       ? { x0: -0.82 * A, x1: 0.82 * A, y0: 0.18, y1: 0.86 }
       : { x0: 0.1 * A, x1: 0.9 * A, y0: -0.72, y1: 0.72 };
