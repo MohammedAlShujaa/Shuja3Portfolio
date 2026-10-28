@@ -28,7 +28,8 @@ public/              static site served by Vercel (or by Express locally)
   contact.html       Contact
   modeling.html      standalone modeling gallery (css/modeling.css, js/modeling.js)
   css/style.css      the Neural Navy design system
-  js/                main.js (shared) + one script per page
+  js/                main.js (shared) + one script per page; hero-motion.js is the homepage opening sequence
+  vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)
   img/               profile photo, project thumbnails, gallery photos
   uploads/           images uploaded through the admin panel (local only)
 server/
@@ -47,6 +48,8 @@ server/
   routes/admin.js    login and the authenticated CRUD routes
   views/             admin login, dashboard, admin.js, admin.css
 tools/resize-photos.py  batch-resizes photos into web and thumbnail versions before upload
+tools/vendor-gsap.js    copies the GSAP files from node_modules into public/vendor/gsap/<version>/
+.claude/skills/      official GSAP agent skills for Claude Code (see its README)
 api/index.js         Vercel serverless entry point
 vercel.json          sends every request to the Express handler, plus legacy .html redirects
 ```
@@ -124,6 +127,19 @@ npm run migrate:security   # adds the rate_limit table
 ```
 
 Sign in at http://localhost:3000/admin.
+
+## Motion
+
+The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. Visitors who prefer reduced motion see the finished hero straight away.
+
+GSAP is served from this site rather than a CDN, because the Content Security Policy only allows scripts from the site itself. The files live in a versioned folder so they can be cached for a year. To upgrade GSAP:
+
+```bash
+npm install --save-dev --save-exact gsap@latest
+npm run vendor:gsap
+```
+
+Then update the `/vendor/gsap/<version>/` script paths in `public/home.html`.
 
 ## Admin panel
 

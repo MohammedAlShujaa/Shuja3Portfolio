@@ -118,6 +118,10 @@ async function renderFeatured() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // The server already rendered everything below (see server/render.js). Only
+  // fetch and render here when it could not, for example if the database was
+  // unreachable and the raw template was served instead.
+  if (document.querySelector('main[data-ssr]')) return;
   try {
     await Promise.all([renderHero(), renderHeroSocials(), renderStats(), renderFeatured()]);
   } catch (err) {
