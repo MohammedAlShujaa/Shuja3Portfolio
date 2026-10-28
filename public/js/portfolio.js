@@ -36,6 +36,7 @@ function applyFilter({ animate = true } = {}) {
   // each card from its old place to its new one. While they move the cards are
   // taken out of the layout, which would collapse the grid and pull the content
   // below up underneath them, so the grid's height is animated explicitly too.
+  if (typeof resetCardTilts === 'function') resetCardTilts();
   const state = Flip.getState(cards);
   const fromHeight = grid.offsetHeight;
   show();
