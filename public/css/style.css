@@ -537,6 +537,107 @@ p { margin: 0 0 var(--s2); }
 .card__more:hover { text-decoration: underline; }
 .card__more[hidden] { display: none; }
 
+/* Project viewer (js/project-modal.js): a card opened large in the middle of
+   the screen. While it morphs, .pm__surface (a plain panel) and the thumbnail
+   travel between the small card and the big one, and the big card's own
+   background is switched off so only they show. */
+.pm {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+}
+.pm[hidden] { display: none; }
+
+.pm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 8, 18, 0.74);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.pm__surface,
+.pm__panel {
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.pm__surface {
+  position: fixed;
+  visibility: hidden;
+}
+.pm.is-morphing .pm__surface { visibility: visible; }
+
+.pm__panel {
+  position: relative;
+  outline: none; /* focused only briefly, while the close button fades in */
+  /* As wide as fits while leaving the text at least ~240px below the 16:10 image. */
+  width: min(680px, 92vw, calc((88vh - 240px) * 1.6));
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pm.is-morphing .pm__panel {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.pm__thumb {
+  display: block;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: #0e1730;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.pm__thumb[hidden] { display: none; }
+
+.pm__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s4);
+}
+.pm__title { margin: 0; font-size: clamp(1.3rem, 2.4vw, 1.7rem); }
+.pm__desc {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 65ch;
+}
+
+.pm__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(11, 17, 33, 0.75);
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.pm__close:hover { border-color: var(--cyan); color: var(--cyan); }
+
 .card__meta {
   display: flex;
   flex-wrap: wrap;
