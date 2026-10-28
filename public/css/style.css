@@ -452,6 +452,24 @@ p { margin: 0 0 var(--s2); }
   box-shadow: 0 12px 32px rgba(34, 211, 238, 0.1);
 }
 
+/* Soft light that follows the mouse across a hovered card. main.js keeps
+   --mx and --my at the pointer position. It sits on top of the thumbnail and
+   text as a faint light layer, and lets clicks through to the links below. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%),
+              rgba(34, 211, 238, 0.09), transparent 45%);
+  opacity: 0;
+  transition: opacity var(--t-slow) var(--ease);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .card:hover::before { opacity: 1; }
+}
+
 .card__thumb {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -564,6 +582,10 @@ p { margin: 0 0 var(--s2); }
   transition: all var(--t) var(--ease);
 }
 .filter-pill:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* While the filter slides cards around (portfolio.js), the cards' CSS
+   transition must not fight GSAP for their transform. */
+.is-flipping .card { transition: none; }
 .filter-pill[aria-pressed='true'] {
   background: var(--cyan);
   border-color: var(--cyan);
@@ -847,22 +869,29 @@ p { margin: 0 0 var(--s2); }
 }
 .fade-up.is-visible { opacity: 1; transform: none; }
 
-/* Staggered one-time hero entrance. */
-.hero-anim > * {
-  opacity: 0;
-  animation: heroUp 500ms var(--ease) forwards;
-}
-.hero-anim > *:nth-child(1) { animation-delay: 60ms; }
-.hero-anim > *:nth-child(2) { animation-delay: 140ms; }
-.hero-anim > *:nth-child(3) { animation-delay: 220ms; }
-.hero-anim > *:nth-child(4) { animation-delay: 300ms; }
-.hero-anim > *:nth-child(5) { animation-delay: 380ms; }
-.hero-anim > *:nth-child(6) { animation-delay: 460ms; }
+/* Hero opening sequence (js/hero-motion.js). The hero stays hidden only until
+   the timeline has set its start state; an inline script in home.html adds this
+   class only when motion is allowed, and removes it after 3s if the scripts
+   never load, so content can never stay hidden. */
+.motion-pending .hero__constellation,
+.motion-pending .hero__copy,
+.motion-pending .hero__photo-wrap { visibility: hidden; }
 
-@keyframes heroUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
+/* Letters of the split name; inline-block so they can move. */
+.hero__name .char { display: inline-block; }
+
+/* Page transitions. Browsers that support cross-document view transitions
+   fade the old page out and bring the new one up slightly; the navbar has its
+   own name, so it stays put instead of fading with the page. Browsers without
+   support simply load the next page as before. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
 }
+.navbar { view-transition-name: site-nav; }
+::view-transition-old(root) { animation: 160ms ease-out both page-out; }
+::view-transition-new(root) { animation: 320ms var(--ease) 60ms both page-in; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -874,7 +903,6 @@ p { margin: 0 0 var(--s2); }
     transition-duration: 0.01ms !important;
   }
   .fade-up { opacity: 1; transform: none; }
-  .hero-anim > * { opacity: 1; animation: none; }
   .btn:hover, .card:hover, .skill:hover { transform: none; }
 }
 

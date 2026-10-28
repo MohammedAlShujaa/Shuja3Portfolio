@@ -74,8 +74,10 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: { fileSize: 4 * 1024 * 1024 },
+  // SVG is deliberately excluded: it can carry script, and uploads are served
+  // from the same origin, so an SVG upload would be a stored XSS vector.
   fileFilter: (req, file, cb) => {
-    const ok = /^image\/(png|jpeg|jpg|gif|webp|svg\+xml)$/.test(file.mimetype);
+    const ok = /^image\/(png|jpeg|jpg|gif|webp)$/.test(file.mimetype);
     cb(ok ? null : new Error('Only image files are allowed.'), ok);
   }
 });
