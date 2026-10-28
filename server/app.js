@@ -150,9 +150,29 @@ app.get(/.*\.html$/, (req, res) => {
   res.redirect(301, clean + query);
 });
 
+// Cache headers for static files. On Vercel every file passes through this
+// function, so without them each asset costs an invocation on every visit.
+// s-maxage lets Vercel's CDN keep a copy, and Vercel clears that cache on each
+// deploy. Browsers revalidate CSS and JS (cheap 304s via ETag) so a redeploy is
+// picked up at once. Vendor files live under a versioned folder, so they never
+// change in place and can be cached for a year.
+function cacheHeaders(res, filePath) {
+  const rel = path.relative(path.join(__dirname, '..', 'public'), filePath).split(path.sep).join('/');
+  if (rel.startsWith('vendor/')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (/\.(css|js)$/.test(rel)) {
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate, s-maxage=86400');
+  } else if (/\.(jpe?g|png|gif|webp|avif|svg|ico)$/.test(rel)) {
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+  }
+}
+
 // Serve the static site. The extensions option lets /about resolve to about.html,
 // so pages are reached without the .html extension.
-app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['html'] }));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  extensions: ['html'],
+  setHeaders: cacheHeaders
+}));
 
 app.use((req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found.' });

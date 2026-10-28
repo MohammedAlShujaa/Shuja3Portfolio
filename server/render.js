@@ -182,11 +182,30 @@ function contactListHtml(socials, profile) {
 
 /* --------------------------------------------------- page injectors */
 
+// The hero buttons, including the CV button, which only appears once a resume
+// link is set so it is never a dead button.
+function heroCtasHtml(profile) {
+  const primary = `<a class="btn btn--primary" href="${esc(profile.cta_primary_href || '/portfolio')}" data-cta-primary>` +
+    `${esc(profile.cta_primary_label || 'View My Projects')}</a>`;
+  const secondary = `<a class="btn btn--secondary" href="${esc(profile.cta_secondary_href || '/contact')}" data-cta-secondary>` +
+    `${esc(profile.cta_secondary_label || 'Get in Touch')}</a>`;
+  const cv = profile.resume_url
+    ? `<a class="btn btn--ghost" href="${esc(profile.resume_url)}" target="_blank" rel="noopener noreferrer" data-cta-cv>Shujaa CV</a>`
+    : '';
+  return primary + secondary + cv;
+}
+
 function injectHome(html, { profile, projects, socials }) {
   if (profile) {
     if (profile.photo_url) html = put(html, 'src="/img/profile-placeholder.svg"', `src="${esc(profile.photo_url)}"`);
+    html = put(html, 'alt="Mohammed Al-Shujaa, profile photo"', `alt="${esc(profile.name)}, profile photo"`);
+    html = put(html, 'data-hero-name>Mohammed Al-Shujaa</h1>', `data-hero-name>${esc(profile.headline)}</h1>`);
     html = put(html, 'data-hero-subheading></p>', `data-hero-subheading>${subheadingHtml(profile.subheading)}</p>`);
     html = put(html, 'data-hero-intro></p>', `data-hero-intro>${esc(profile.intro)}</p>`);
+    html = html.replace(/(<div class="hero__ctas">)[\s\S]*?(<\/div>)/, (m, open, close) => open + heroCtasHtml(profile) + close);
+    // Tells home.js the content is already here, so it does not fetch and redraw it
+    // (a redraw would also restart the hero animation).
+    html = put(html, '<main id="main">', '<main id="main" data-ssr>');
   }
   html = put(html, 'data-stats></ul>', `data-stats>${statsHtml(projects.length)}</ul>`);
   html = put(html, 'data-hero-socials></ul>', `data-hero-socials>${heroSocialsHtml(socials)}</ul>`);
@@ -198,6 +217,9 @@ function injectHome(html, { profile, projects, socials }) {
 function injectPortfolio(html, { projects, socials }) {
   const cards = projects.map((p) => projectCardHtml(p, false)).join('');
   html = put(html, '<p class="state-msg">Loading projects ...</p>', cards);
+  // Tells portfolio.js the cards are already here, so it filters them in place
+  // instead of fetching and redrawing them.
+  html = put(html, '<main id="main">', '<main id="main" data-ssr>');
   html = put(html, '<ul class="footer__socials"></ul>', `<ul class="footer__socials">${footerSocialsHtml(socials)}</ul>`);
   return html;
 }
