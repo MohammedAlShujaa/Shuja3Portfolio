@@ -179,6 +179,45 @@ function projectCard(project, { compact = false } = {}) {
   return card;
 }
 
+/* ------------------------------------------- section label decode */
+
+// The small "// label" lines above section headings resolve out of binary as
+// they scroll into view, like the greeting in the hero. The "// " stays put,
+// spaces stay spaces, and the text is monospaced, so nothing shifts while it
+// resolves. Plain JS, so it works on pages that do not load GSAP.
+function decode(node) {
+  const text = node.textContent;
+  const fixed = text.startsWith('// ') ? 3 : 0;
+  const duration = 500 + text.length * 18;
+  const start = performance.now();
+  const frame = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const shown = fixed + Math.floor(progress * (text.length - fixed));
+    let out = text.slice(0, shown);
+    for (let i = shown; i < text.length; i++) {
+      out += text[i] === ' ' ? ' ' : (Math.random() < 0.5 ? '0' : '1');
+    }
+    node.textContent = out;
+    if (progress < 1) requestAnimationFrame(frame);
+    else node.textContent = text;
+  };
+  requestAnimationFrame(frame);
+}
+
+function initLabelDecode() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!('IntersectionObserver' in window)) return;
+  const labels = document.querySelectorAll('.eyebrow');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      decode(entry.target);
+    });
+  }, { threshold: 1 });
+  labels.forEach((l) => observer.observe(l));
+}
+
 /* -------------------------------------------- card hover light */
 
 // Keeps --mx/--my on the hovered card at the pointer position, which the
@@ -201,4 +240,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initFooter();
   initReveals();
   initCardGlow();
+  initLabelDecode();
 });

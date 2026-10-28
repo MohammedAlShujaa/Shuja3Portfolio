@@ -55,6 +55,9 @@
 
   // The opening timeline. Calls context.startLive() when it finishes.
   function intro(context) {
+    // Once per browser session (checked by the inline script in home.html).
+    try { sessionStorage.setItem('hero-intro-seen', '1'); } catch (e) { /* storage blocked: intro just replays */ }
+
     // The split is kept after the animation rather than reverted: as whole
     // words, "Al-Shujaa" never breaks at its hyphen, so reverting would make
     // the name jump to a new line break on the last frame. SplitText labels
@@ -253,9 +256,10 @@
         document.dispatchEvent(new CustomEvent('hero:settled'));
       });
 
-      // If the 3s safety timeout already showed the hero (very slow network),
-      // the visitor is looking at finished content: skip the intro rather than
-      // yank it away, and go straight to the live constellation.
+      // The hero is already showing when the intro was seen earlier this
+      // session, or when the 3s safety timeout fired (very slow network). Either
+      // way the visitor is looking at finished content: skip the intro rather
+      // than yank it away, and go straight to the live constellation.
       if (root.classList.contains('motion-pending')) intro(context);
       else context.startLive();
 

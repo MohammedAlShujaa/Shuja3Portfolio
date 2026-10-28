@@ -217,6 +217,9 @@ function injectHome(html, { profile, projects, socials }) {
 function injectPortfolio(html, { projects, socials }) {
   const cards = projects.map((p) => projectCardHtml(p, false)).join('');
   html = put(html, '<p class="state-msg">Loading projects ...</p>', cards);
+  // Tells portfolio.js the cards are already here, so it filters them in place
+  // instead of fetching and redrawing them.
+  html = put(html, '<main id="main">', '<main id="main" data-ssr>');
   html = put(html, '<ul class="footer__socials"></ul>', `<ul class="footer__socials">${footerSocialsHtml(socials)}</ul>`);
   return html;
 }

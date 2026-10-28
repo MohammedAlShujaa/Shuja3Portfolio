@@ -130,7 +130,16 @@ Sign in at http://localhost:3000/admin.
 
 ## Motion
 
-The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. After that the constellation stays live: each cluster drifts slowly, the clusters move at different speeds as the hero scrolls away, and points near the mouse are pushed aside with their links stretching to follow. The live layers pause while the hero is off screen. Further down, `public/js/scroll-story.js` takes over once the hero has settled: the stat numbers count up when the strip is on screen, and the featured project cards uncover upward in a stagger as they scroll into view. Project cards on every page also get a soft light that follows the mouse (CSS plus a small handler in `main.js`). Visitors who prefer reduced motion see the finished page straight away, with nothing moving.
+The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. After that the constellation stays live: each cluster drifts slowly, the clusters move at different speeds as the hero scrolls away, and points near the mouse are pushed aside with their links stretching to follow. The live layers pause while the hero is off screen. Further down, `public/js/scroll-story.js` takes over once the hero has settled: the stat numbers count up when the strip is on screen, and the featured project cards uncover upward in a stagger as they scroll into view. Project cards on every page also get a soft light that follows the mouse (CSS plus a small handler in `main.js`).
+
+Across the site:
+
+- The hero's opening sequence plays once per browser session; coming back to Home later shows the finished hero, already live.
+- Pages fade into each other with cross-document view transitions (CSS only, in `style.css`), and the navbar stays put. Browsers without support load pages as before.
+- The small `// label` lines above section headings resolve out of binary as they scroll into view (`main.js`, no GSAP needed).
+- On the Portfolio page, filtering by category slides the remaining cards into their new places with GSAP Flip, while the others fade out and back in.
+
+Visitors who prefer reduced motion see the finished pages straight away, with nothing moving.
 
 GSAP is served from this site rather than a CDN, because the Content Security Policy only allows scripts from the site itself. The files live in a versioned folder so they can be cached for a year. To upgrade GSAP:
 
@@ -139,7 +148,7 @@ npm install --save-dev --save-exact gsap@latest
 npm run vendor:gsap
 ```
 
-Then update the `/vendor/gsap/<version>/` script paths in `public/home.html`.
+Then update the `/vendor/gsap/<version>/` script paths in `public/home.html` and `public/portfolio.html`.
 
 ## Admin panel
 

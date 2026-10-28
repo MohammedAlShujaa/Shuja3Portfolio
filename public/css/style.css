@@ -582,6 +582,10 @@ p { margin: 0 0 var(--s2); }
   transition: all var(--t) var(--ease);
 }
 .filter-pill:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* While the filter slides cards around (portfolio.js), the cards' CSS
+   transition must not fight GSAP for their transform. */
+.is-flipping .card { transition: none; }
 .filter-pill[aria-pressed='true'] {
   background: var(--cyan);
   border-color: var(--cyan);
@@ -875,6 +879,19 @@ p { margin: 0 0 var(--s2); }
 
 /* Letters of the split name; inline-block so they can move. */
 .hero__name .char { display: inline-block; }
+
+/* Page transitions. Browsers that support cross-document view transitions
+   fade the old page out and bring the new one up slightly; the navbar has its
+   own name, so it stays put instead of fading with the page. Browsers without
+   support simply load the next page as before. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+.navbar { view-transition-name: site-nav; }
+::view-transition-old(root) { animation: 160ms ease-out both page-out; }
+::view-transition-new(root) { animation: 320ms var(--ease) 60ms both page-in; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

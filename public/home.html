@@ -23,10 +23,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   <script>
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.classList.add('motion-pending');
-      setTimeout(function () { document.documentElement.classList.remove('motion-pending'); }, 3000);
-    }
+    (function () {
+      // The opening sequence plays once per browser session; coming back to Home
+      // later shows the finished hero straight away (hero-motion.js then skips
+      // the intro and starts the live constellation).
+      var introSeen = false;
+      try { introSeen = sessionStorage.getItem('hero-intro-seen') === '1'; } catch (e) {}
+      if (!introSeen && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('motion-pending');
+        setTimeout(function () { document.documentElement.classList.remove('motion-pending'); }, 3000);
+      }
+    })();
   </script>
 
   <script type="application/ld+json">
