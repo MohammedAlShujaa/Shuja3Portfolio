@@ -233,6 +233,77 @@ function initCardGlow() {
   }, { passive: true });
 }
 
+/* ---------------------------------------------------- card tilt */
+
+// A hovered card leans a few degrees away from the pointer and lifts, as if
+// pressed where the mouse is. Uses GSAP, which the pages with cards (Home and
+// Portfolio) load; elsewhere, on touch screens, and for reduced motion, cards
+// keep the plain CSS hover lift.
+//
+// While a card tilts it carries .is-tilting, which drops the CSS transition on
+// transform (it would drag every GSAP frame behind) and lets GSAP do the lift.
+// Once the card has settled after the pointer leaves, its inline transform and
+// the class are removed, so other animations (scroll reveals, the Portfolio
+// filter) always start from a clean card.
+const TILT_MAX = 4; // degrees at the card's edges
+const tilts = new Map();
+
+function tiltFor(card) {
+  if (!tilts.has(card)) {
+    gsap.set(card, { transformPerspective: 900 });
+    const to = (prop) => gsap.quickTo(card, prop, { duration: 0.5, ease: 'power3.out' });
+    tilts.set(card, { rx: to('rotationX'), ry: to('rotationY'), y: to('y'), settle: null });
+    card.classList.add('is-tilting');
+  }
+  return tilts.get(card);
+}
+
+function clearTilt(card) {
+  const t = tilts.get(card);
+  if (!t) return;
+  if (t.settle) t.settle.kill();
+  gsap.killTweensOf(card, 'rotationX,rotationY,y');
+  gsap.set(card, { clearProps: 'transform' });
+  card.classList.remove('is-tilting');
+  tilts.delete(card);
+}
+
+// Called by portfolio.js before the filter moves cards, so a card that is
+// still settling never fights the filter animation.
+function resetCardTilts() {
+  [...tilts.keys()].forEach(clearTilt);
+}
+
+function initCardTilt() {
+  if (!window.gsap) return;
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  document.addEventListener('pointermove', (e) => {
+    const card = e.target.closest && e.target.closest('.card');
+    if (!card || card.closest('.is-flipping')) return;
+    const t = tiltFor(card);
+    if (t.settle) { t.settle.kill(); t.settle = null; }
+    const r = card.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width - 0.5; // -0.5 (left) to 0.5 (right)
+    const ny = (e.clientY - r.top) / r.height - 0.5; // -0.5 (top) to 0.5 (bottom)
+    t.ry(nx * 2 * TILT_MAX);
+    t.rx(-ny * 2 * TILT_MAX);
+    t.y(-4);
+  }, { passive: true });
+
+  document.addEventListener('pointerout', (e) => {
+    const card = e.target.closest && e.target.closest('.card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const t = tilts.get(card);
+    if (!t) return;
+    t.rx(0);
+    t.ry(0);
+    t.y(0);
+    t.settle = gsap.delayedCall(0.6, () => clearTilt(card));
+  });
+}
+
 /* ------------------------------------------------------- boot */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -240,5 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initFooter();
   initReveals();
   initCardGlow();
+  initCardTilt();
   initLabelDecode();
 });
