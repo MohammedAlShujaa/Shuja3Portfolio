@@ -234,6 +234,62 @@ function initCardGlow() {
   }, { passive: true });
 }
 
+/* --------------------------------------- description "See more" */
+
+// Portfolio cards show three lines of their description. When the text is
+// longer, a "See more" button opens it in place (and becomes "See less").
+// The full text is always in the page, so screen readers read all of it, and
+// without JavaScript nothing is cut. The button only appears when the text
+// really overflows, which is rechecked once the web fonts load and whenever
+// the layout width changes.
+function initDescToggles(root = document) {
+  root.querySelectorAll('[data-projects] .card__desc').forEach((desc, i) => {
+    if (desc.parentElement.classList.contains('card__text')) return;
+
+    const wrap = el('div', 'card__text');
+    desc.replaceWith(wrap);
+    wrap.appendChild(desc);
+    desc.id = desc.id || `card-desc-${i}-${Math.random().toString(36).slice(2, 7)}`;
+    desc.classList.add('is-clamped');
+
+    const more = el('button', 'card__more', 'See more');
+    more.type = 'button';
+    more.setAttribute('aria-expanded', 'false');
+    more.setAttribute('aria-controls', desc.id);
+    more.addEventListener('click', () => {
+      const open = more.getAttribute('aria-expanded') !== 'true';
+      desc.classList.toggle('is-clamped', !open);
+      more.setAttribute('aria-expanded', String(open));
+      more.textContent = open ? 'See less' : 'See more';
+    });
+    wrap.appendChild(more);
+  });
+  updateDescToggles();
+}
+
+// Shows "See more" only on descriptions that are actually cut off.
+function updateDescToggles() {
+  document.querySelectorAll('[data-projects] .card__more').forEach((more) => {
+    if (more.getAttribute('aria-expanded') === 'true') return;
+    const desc = document.getElementById(more.getAttribute('aria-controls'));
+    if (!desc || !desc.offsetParent) return; // hidden by the filter: check later
+    more.hidden = desc.scrollHeight <= desc.clientHeight + 1;
+  });
+}
+
+function initDescToggleUpdates() {
+  if (!document.querySelector('[data-projects]')) return;
+  if (document.fonts) document.fonts.ready.then(updateDescToggles);
+  let last = window.innerWidth;
+  let timer;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === last) return;
+    last = window.innerWidth;
+    clearTimeout(timer);
+    timer = setTimeout(updateDescToggles, 150);
+  });
+}
+
 /* ---------------------------------------------------- card tilt */
 
 // A hovered card leans a few degrees away from the pointer and lifts, as if
@@ -335,5 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReveals();
   initCardGlow();
   initCardTilt();
+  initDescToggles();
+  initDescToggleUpdates();
   initLabelDecode();
 });
