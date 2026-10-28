@@ -105,6 +105,19 @@ function revealOnScroll() {
   nodes.forEach((n) => obs.observe(n));
 }
 
+/* ----------------------------------------------------- smooth scroll */
+
+// Lenis (vendored in /vendor/lenis/) smooths mouse-wheel and trackpad
+// scrolling, as on the rest of the site; touch screens keep native scrolling.
+// Off for reduced motion. Paused while the lightbox covers the page.
+let lenis = null;
+
+function initSmoothScroll() {
+  if (!window.Lenis) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  lenis = new Lenis({ autoRaf: true });
+}
+
 /* ---------------------------------------------------------- lightbox */
 
 function openLightbox(index) {
@@ -113,12 +126,14 @@ function openLightbox(index) {
   const lb = $('[data-lightbox]');
   lb.dataset.open = 'true';
   document.body.style.overflow = 'hidden';
+  if (lenis) lenis.stop();
   $('.lb-close').focus();
 }
 
 function closeLightbox() {
   $('[data-lightbox]').dataset.open = 'false';
   document.body.style.overflow = '';
+  if (lenis) lenis.start();
 }
 
 function step(delta) {
@@ -156,6 +171,7 @@ function initLightbox() {
 /* ------------------------------------------------------------- boot */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initSmoothScroll();
   initLightbox();
   try {
     items = await loadGallery();
