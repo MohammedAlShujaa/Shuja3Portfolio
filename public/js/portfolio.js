@@ -8,6 +8,7 @@
    visitors who prefer reduced motion, the cards simply switch at once. */
 
 let activeFilter = 'All';
+let flipCount = 0; // which filter animation is the latest
 
 const canAnimate = () =>
   window.gsap && window.Flip && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,6 +40,7 @@ function applyFilter({ animate = true } = {}) {
   // taken out of the layout, which would collapse the grid and pull the content
   // below up underneath them, so the grid's height is animated explicitly too.
   if (typeof resetCardTilts === 'function') resetCardTilts();
+  flipCount += 1;
   const state = Flip.getState(cards);
   const fromHeight = grid.offsetHeight;
   show();
@@ -49,9 +51,17 @@ function applyFilter({ animate = true } = {}) {
     absolute: true,
     nested: true,
     // The cards' CSS hover transition on transform would drag every frame of
-    // the slide behind, so switch it off while they move.
+    // the slide behind, so switch it off while they move. It comes back two
+    // frames after the end, once Flip's own cleanup of the cards' transforms
+    // has been painted: in the same frame, the browser would animate that
+    // cleanup as a second, unwanted slide. A newer filter click keeps it off.
     onStart: () => grid.classList.add('is-flipping'),
-    onComplete: () => grid.classList.remove('is-flipping'),
+    onComplete: () => {
+      const mine = flipCount;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (mine === flipCount) grid.classList.remove('is-flipping');
+      }));
+    },
     onEnter: (els) => gsap.fromTo(els, { autoAlpha: 0, scale: 0.94 }, { autoAlpha: 1, scale: 1, duration: 0.45, delay: 0.1 }),
     onLeave: (els) => gsap.to(els, { autoAlpha: 0, scale: 0.94, duration: 0.3 })
   });
