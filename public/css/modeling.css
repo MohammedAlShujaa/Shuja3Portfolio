@@ -19,6 +19,9 @@
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
+/* Lenis (modeling.js) does the smoothing when it runs; CSS smooth scrolling on
+   top of it would fight every scroll it makes. */
+html.lenis { scroll-behavior: auto; }
 
 body {
   margin: 0;
