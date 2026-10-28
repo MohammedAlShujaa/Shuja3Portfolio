@@ -140,6 +140,7 @@ Across the site:
 - Pages fade into each other with cross-document view transitions (CSS only, in `style.css`), and the navbar stays put. Browsers without support load pages as before.
 - The small `// label` lines above section headings resolve out of binary as they scroll into view (`main.js`, no GSAP needed).
 - Mouse-wheel and trackpad scrolling is smoothed by [Lenis](https://github.com/darkroomengineering/lenis) (`main.js`, and `modeling.js` on the Modeling page, where it pauses while the photo lightbox is open). Touch screens keep native scrolling. On the homepage GSAP's ticker drives it so ScrollTrigger stays in step. Add `data-lenis-prevent` to any element that scrolls on its own (the contact form's message box has it).
+- On the Portfolio page, "See more" on a card opens it large in the middle of the screen (`project-modal.js`): the card's panel and thumbnail glide from its grid slot and grow while the page dims, then the full description fades in. Closing (the × button, Esc, or a click outside) returns it to its slot.
 - On the Portfolio page, filtering by category slides the remaining cards into their new places with GSAP Flip, while the others fade out and back in.
 
 Visitors who prefer reduced motion see the finished pages straight away, with nothing moving.
