@@ -30,6 +30,7 @@ public/              static site served by Vercel (or by Express locally)
   css/style.css      the Neural Navy design system
   js/                main.js (shared) + one script per page; hero-motion.js and scroll-story.js are the homepage motion
   vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)
+  vendor/lenis/<ver>/ Lenis smooth-scroll files served from this site (npm run vendor:lenis)
   img/               profile photo, project thumbnails, gallery photos
   uploads/           images uploaded through the admin panel (local only)
 server/
@@ -49,6 +50,7 @@ server/
   views/             admin login, dashboard, admin.js, admin.css
 tools/resize-photos.py  batch-resizes photos into web and thumbnail versions before upload
 tools/vendor-gsap.js    copies the GSAP files from node_modules into public/vendor/gsap/<version>/
+tools/vendor-lenis.js   copies the Lenis files from node_modules into public/vendor/lenis/<version>/
 .claude/skills/      official GSAP agent skills for Claude Code (see its README)
 api/index.js         Vercel serverless entry point
 vercel.json          sends every request to the Express handler, plus legacy .html redirects
@@ -137,6 +139,7 @@ Across the site:
 - The hero's opening sequence plays once per browser session; coming back to Home later shows the finished hero, already live.
 - Pages fade into each other with cross-document view transitions (CSS only, in `style.css`), and the navbar stays put. Browsers without support load pages as before.
 - The small `// label` lines above section headings resolve out of binary as they scroll into view (`main.js`, no GSAP needed).
+- Mouse-wheel and trackpad scrolling is smoothed by [Lenis](https://github.com/darkroomengineering/lenis) (`main.js`). Touch screens keep native scrolling. On the homepage GSAP's ticker drives it so ScrollTrigger stays in step. Add `data-lenis-prevent` to any element that scrolls on its own (the contact form's message box has it).
 - On the Portfolio page, filtering by category slides the remaining cards into their new places with GSAP Flip, while the others fade out and back in.
 
 Visitors who prefer reduced motion see the finished pages straight away, with nothing moving.
@@ -148,7 +151,7 @@ npm install --save-dev --save-exact gsap@latest
 npm run vendor:gsap
 ```
 
-Then update the `/vendor/gsap/<version>/` script paths in `public/home.html` and `public/portfolio.html`.
+Then update the `/vendor/gsap/<version>/` script paths in `public/home.html` and `public/portfolio.html`. Lenis works the same way (`npm install --save-dev --save-exact lenis@latest`, `npm run vendor:lenis`); its `/vendor/lenis/<version>/` paths appear in Home, About, Portfolio, and Contact.
 
 ## Admin panel
 
