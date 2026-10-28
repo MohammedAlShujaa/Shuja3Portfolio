@@ -28,7 +28,7 @@ public/              static site served by Vercel (or by Express locally)
   contact.html       Contact
   modeling.html      standalone modeling gallery (css/modeling.css, js/modeling.js)
   css/style.css      the Neural Navy design system
-  js/                main.js (shared) + one script per page; hero-motion.js is the homepage opening sequence
+  js/                main.js (shared) + one script per page; hero-motion.js and scroll-story.js are the homepage motion
   vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)
   img/               profile photo, project thumbnails, gallery photos
   uploads/           images uploaded through the admin panel (local only)
@@ -130,7 +130,7 @@ Sign in at http://localhost:3000/admin.
 
 ## Motion
 
-The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. After that the constellation stays live: each cluster drifts slowly, the clusters move at different speeds as the hero scrolls away, and points near the mouse are pushed aside with their links stretching to follow. The live layers pause while the hero is off screen. Visitors who prefer reduced motion see the finished hero straight away, with nothing moving.
+The homepage hero plays a short opening sequence built with [GSAP](https://gsap.com) (`public/js/hero-motion.js`): the constellation points start as one mixed blob and separate into their three clusters, then the greeting, name, and the rest of the hero arrive. After that the constellation stays live: each cluster drifts slowly, the clusters move at different speeds as the hero scrolls away, and points near the mouse are pushed aside with their links stretching to follow. The live layers pause while the hero is off screen. Further down, `public/js/scroll-story.js` takes over once the hero has settled: the stat numbers count up when the strip is on screen, and the featured project cards uncover upward in a stagger as they scroll into view. Project cards on every page also get a soft light that follows the mouse (CSS plus a small handler in `main.js`). Visitors who prefer reduced motion see the finished page straight away, with nothing moving.
 
 GSAP is served from this site rather than a CDN, because the Content Security Policy only allows scripts from the site itself. The files live in a versioned folder so they can be cached for a year. To upgrade GSAP:
 

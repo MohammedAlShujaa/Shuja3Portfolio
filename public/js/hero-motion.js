@@ -245,7 +245,13 @@
 
     mm.add('(prefers-reduced-motion: no-preference)', (context) => {
       let stopLive = null;
-      context.add('startLive', () => { stopLive = live(); });
+      context.add('startLive', () => {
+        stopLive = live();
+        // Lets the rest of the page (js/scroll-story.js) start its motion only
+        // after the hero has finished, so the two never compete for attention.
+        root.dataset.heroSettled = 'true';
+        document.dispatchEvent(new CustomEvent('hero:settled'));
+      });
 
       // If the 3s safety timeout already showed the hero (very slow network),
       // the visitor is looking at finished content: skip the intro rather than
