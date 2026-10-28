@@ -237,7 +237,8 @@ function initCardGlow() {
 /* --------------------------------------- description "See more" */
 
 // Portfolio cards show three lines of their description. When the text is
-// longer, a "See more" button opens it in place (and becomes "See less").
+// longer, a "See more" button opens the card in the project viewer
+// (project-modal.js), or, if that is not loaded, expands it in place.
 // The full text is always in the page, so screen readers read all of it, and
 // without JavaScript nothing is cut. The button only appears when the text
 // really overflows, which is rechecked once the web fonts load and whenever
@@ -254,9 +255,17 @@ function initDescToggles(root = document) {
 
     const more = el('button', 'card__more', 'See more');
     more.type = 'button';
-    more.setAttribute('aria-expanded', 'false');
     more.setAttribute('aria-controls', desc.id);
+    // On the Portfolio page "See more" opens the card in the project viewer
+    // (project-modal.js). Without it, the description expands in place.
+    const viewer = typeof openProjectModal === 'function';
+    if (viewer) more.setAttribute('aria-haspopup', 'dialog');
+    else more.setAttribute('aria-expanded', 'false');
     more.addEventListener('click', () => {
+      if (typeof openProjectModal === 'function') {
+        openProjectModal(desc.closest('.card'), more);
+        return;
+      }
       const open = more.getAttribute('aria-expanded') !== 'true';
       desc.classList.toggle('is-clamped', !open);
       more.setAttribute('aria-expanded', String(open));
