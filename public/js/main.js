@@ -51,6 +51,7 @@ function initNav() {
     toggle.setAttribute('aria-expanded', String(open));
     links.dataset.open = String(open);
     document.body.style.overflow = open ? 'hidden' : '';
+    if (lenis) (open ? lenis.stop() : lenis.start());
     applyInert();
   };
 
@@ -304,9 +305,31 @@ function initCardTilt() {
   });
 }
 
+/* ------------------------------------------------- smooth scroll */
+
+// Lenis (vendored in /vendor/lenis/) smooths mouse-wheel and trackpad
+// scrolling; touch screens keep native scrolling. On the homepage GSAP's
+// ticker drives it and keeps ScrollTrigger in step with the smoothed position;
+// elsewhere Lenis runs its own animation frame loop. Off for reduced motion.
+let lenis = null;
+
+function initSmoothScroll() {
+  if (!window.Lenis) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const withScrollTrigger = window.gsap && window.ScrollTrigger;
+  lenis = new Lenis({ autoRaf: !withScrollTrigger });
+  if (withScrollTrigger) {
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+}
+
 /* ------------------------------------------------------- boot */
 
 document.addEventListener('DOMContentLoaded', () => {
+  initSmoothScroll();
   initNav();
   initFooter();
   initReveals();
