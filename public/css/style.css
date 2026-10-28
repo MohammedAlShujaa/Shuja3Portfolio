@@ -452,6 +452,24 @@ p { margin: 0 0 var(--s2); }
   box-shadow: 0 12px 32px rgba(34, 211, 238, 0.1);
 }
 
+/* Soft light that follows the mouse across a hovered card. main.js keeps
+   --mx and --my at the pointer position. It sits on top of the thumbnail and
+   text as a faint light layer, and lets clicks through to the links below. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%),
+              rgba(34, 211, 238, 0.09), transparent 45%);
+  opacity: 0;
+  transition: opacity var(--t-slow) var(--ease);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .card:hover::before { opacity: 1; }
+}
+
 .card__thumb {
   width: 100%;
   aspect-ratio: 16 / 10;

@@ -179,10 +179,26 @@ function projectCard(project, { compact = false } = {}) {
   return card;
 }
 
+/* -------------------------------------------- card hover light */
+
+// Keeps --mx/--my on the hovered card at the pointer position, which the
+// card's ::before glow is centred on (see style.css). Mouse only.
+function initCardGlow() {
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  document.addEventListener('pointermove', (e) => {
+    const card = e.target.closest && e.target.closest('.card');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+    card.style.setProperty('--my', `${e.clientY - r.top}px`);
+  }, { passive: true });
+}
+
 /* ------------------------------------------------------- boot */
 
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initFooter();
   initReveals();
+  initCardGlow();
 });
