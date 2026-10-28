@@ -47,6 +47,7 @@
   const name = q('.hero__name')[0];
   const field = window.dataField && window.dataField.active ? window.dataField : null;
   const followers = [
+    ...q('.hero__subheading'),
     ...q('.hero__intro'),
     ...q('.hero__ctas > *'),
     ...q('.hero__socials')
