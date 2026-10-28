@@ -470,6 +470,13 @@ p { margin: 0 0 var(--s2); }
   .card:hover::before { opacity: 1; }
 }
 
+/* While GSAP tilts a card (main.js), it also does the hover lift, so the CSS
+   transition on transform must not drag its frames behind. */
+.card.is-tilting {
+  transition: border-color var(--t-slow) var(--ease),
+              box-shadow var(--t-slow) var(--ease);
+}
+
 .card__thumb {
   width: 100%;
   aspect-ratio: 16 / 10;
