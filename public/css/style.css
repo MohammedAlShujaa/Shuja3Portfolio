@@ -505,6 +505,38 @@ p { margin: 0 0 var(--s2); }
   flex: 1;
 }
 
+/* Portfolio cards: the description stops after three lines, with a "See more"
+   button under it when there is more (main.js wraps the two in .card__text,
+   which takes over the job of filling the card's height). */
+.card__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.card__text .card__desc { flex: none; }
+.card__desc.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.card__more {
+  position: relative;
+  z-index: 2; /* above the hover light layer */
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--cyan);
+  cursor: pointer;
+}
+.card__more:hover { text-decoration: underline; }
+.card__more[hidden] { display: none; }
+
 .card__meta {
   display: flex;
   flex-wrap: wrap;

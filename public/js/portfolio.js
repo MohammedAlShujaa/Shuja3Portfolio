@@ -23,6 +23,8 @@ function applyFilter({ animate = true } = {}) {
   const show = () => {
     cards.forEach((card) => { card.style.display = matches(card) ? '' : 'none'; });
     empty.hidden = cards.some(matches);
+    // Cards that were hidden could not be measured; check their "See more" now.
+    updateDescToggles();
   };
 
   if (!animate || !canAnimate()) {
@@ -84,6 +86,7 @@ async function renderAll() {
   grid.innerHTML = '';
   projects.forEach((p) => grid.appendChild(projectCard(p)));
   initReveals();
+  initDescToggles(grid);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
