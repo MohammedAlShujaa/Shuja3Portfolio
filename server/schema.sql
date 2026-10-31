@@ -1,6 +1,8 @@
 -- Schema for the portfolio site. Postgres only, used for local development
 -- and for production on Vercel. Run through: npm run seed
 
+DROP TABLE IF EXISTS site_settings;
+DROP TABLE IF EXISTS media;
 DROP TABLE IF EXISTS rate_limit;
 DROP TABLE IF EXISTS gallery;
 DROP TABLE IF EXISTS messages;
@@ -95,6 +97,21 @@ CREATE TABLE rate_limit (
   key          TEXT PRIMARY KEY,
   count        INTEGER NOT NULL DEFAULT 0,
   window_start TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Images uploaded in the admin panel (photos, thumbnails, profile photo),
+-- served at /media/<id>. db.js also creates this table on first use.
+CREATE TABLE media (
+  id           SERIAL PRIMARY KEY,
+  content_type TEXT NOT NULL,
+  data         BYTEA NOT NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Small editable settings, such as the model book's details (key "model").
+CREATE TABLE site_settings (
+  key   TEXT PRIMARY KEY,
+  value JSONB NOT NULL
 );
 
 -- Single admin account for this student project. Only the bcrypt hash is stored.

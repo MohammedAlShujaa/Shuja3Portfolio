@@ -12,7 +12,7 @@ Built on the "Obsidian & Crimson" design system: three colours, Obsidian Black `
 | Backend | Node.js, Express |
 | Database | PostgreSQL (Neon / Vercel Postgres) via the `pg` driver |
 | Auth | bcrypt password hash, stateless signed cookie session (`cookie-session`) |
-| Uploads | Modeling photos go to Supabase Storage. Other uploads use multer to `/public/uploads` (local only, see notes) |
+| Uploads | Images uploaded in the admin (photos, thumbnails, profile photo) are resized in the browser and stored in Postgres, served at `/media/<id>` |
 
 The four main pages are rendered on the server with their content filled in from the database (`server/render.js`), so crawlers and link previews see real text. The browser scripts then refresh the same content from JSON routes under `/api`. Anything saved in the admin panel appears on the live site immediately.
 
@@ -32,7 +32,7 @@ public/              static site served by Vercel (or by Express locally)
   vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)
   vendor/lenis/<ver>/ Lenis smooth-scroll files served from this site (npm run vendor:lenis)
   img/               profile photo, project thumbnails, gallery photos
-  uploads/           images uploaded through the admin panel (local only)
+  uploads/           older local uploads (new uploads are stored in the database)
 server/
   app.js             builds and exports the Express app, security headers, page routes
   index.js           local entry point (npm start)
@@ -43,7 +43,7 @@ server/
   migrate-gallery.js non-destructive: adds the gallery table
   migrate-security.js non-destructive: adds the rate_limit table
   auth.js            login check and the two route guards
-  supabase.js        uploads modeling photos to Supabase Storage
+  model.js           the model book's details (cover line, comp card, measurements)
   hash-password.js   prints a bcrypt hash (npm run hash)
   routes/public.js   read-only JSON + the contact form endpoint
   routes/admin.js    login and the authenticated CRUD routes
@@ -102,8 +102,6 @@ SESSION_SECRET=paste-a-long-random-string
 PORT=3000
 ```
 
-To upload modeling photos from the admin panel, also set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_BUCKET` (a public bucket, default `photos`). See `.env.example`. Leave them empty to paste image URLs instead.
-
 Generate a session secret with:
 
 ```bash
@@ -161,11 +159,12 @@ Then update the `/vendor/gsap/<version>/` script paths in `public/home.html` and
 Everything under `/admin`, and every POST, PUT, and DELETE route, requires a session.
 
 - **Profile**: hero name, headline, subheading, intro, photo, both call to action buttons, location, availability.
-- **Projects**: full CRUD with category, tech tags, links, a featured toggle, sort order, and an image by URL or upload.
+- **Projects**: full CRUD with category, tech tags, links, a featured toggle, sort order, and a thumbnail uploaded from your device or given by URL.
 - **Skills**: add, edit, delete, and reorder within the four groups.
 - **Updates**: the feed shown on the About page.
 - **Social links**: shown in the hero, footer, and contact page.
-- **Modeling**: gallery photos with category, credit, featured toggle, and sort order. Photos are resized in the browser and uploaded to Supabase Storage.
+- **Modeling, Photos**: the model book's photos as a grid in book order. Drop or pick many photos at once from your phone or computer; each is resized in the browser and added to the end of the book. Edit title, category and credit in place (saved as you type), star the cover, drag (or use the arrows) to reorder, and delete.
+- **Modeling, Model details**: the cover line, comp card (based in, languages, Instagram) and measurements shown on `/modeling`. Leave a field empty to hide it.
 - **Messages**: contact form submissions, with mark read/unread, delete, and an unread badge.
 
 Auth is deliberately simple for a student project: one account, a bcrypt hash, and a signed cookie. Login attempts are rate limited per IP (12 per 15 minutes), and the contact form is rate limited (5 per 10 minutes) and has a hidden honeypot field. There is no password reset or two-factor. The password only ever lives in the `ADMIN_PASSWORD` environment variable, never in the repository.
@@ -175,7 +174,7 @@ Auth is deliberately simple for a student project: one account, a bcrypt hash, a
 1. Push the repository to GitHub.
 2. Import it at https://vercel.com/new.
 3. In the project's **Storage** tab, create a Postgres store and connect it. Vercel injects `POSTGRES_URL` automatically.
-4. In **Settings, Environment Variables**, add `ADMIN_PASSWORD` and `SESSION_SECRET`, and the three `SUPABASE_*` variables if you want in-admin photo upload.
+4. In **Settings, Environment Variables**, add `ADMIN_PASSWORD` and `SESSION_SECRET`.
 5. Seed the production database **once, when it is empty**. Copy `POSTGRES_URL` from the Storage tab into your local `.env`, then run `npm run seed` from your machine against it. (Alternatively `vercel env pull .env` to fetch every variable at once.) Never re-run the seed against a live database: it wipes all content, photos, and messages. Use the `migrate:*` scripts for later schema changes.
 6. Deploy.
 
@@ -184,11 +183,11 @@ Auth is deliberately simple for a student project: one account, a bcrypt hash, a
 Two serverless constraints are already handled in the code:
 
 - **Sessions.** `express-session`'s default memory store resets on every invocation, which would sign the admin out constantly. This project uses a stateless signed cookie instead, so login survives across serverless invocations.
-- **File uploads.** Vercel's filesystem is read only, so `multer` writing to disk cannot work in production. The general upload route returns a clear error there, and pasting an image URL is the supported path. Modeling photos avoid this by uploading to Supabase Storage.
+- **File uploads.** Vercel's filesystem is read only, so uploaded images are stored in Postgres (the `media` table, created automatically on first use) and served at `/media/<id>` with a one-year cache. No storage service needs configuring.
 
 ### Deploying to Render or Railway instead
 
-Both run a normal long-lived Node process, so `npm start` works as is and file uploads to `/public/uploads` work until the instance restarts (their disks are also ephemeral unless you attach a volume). Set the same three environment variables, add a Postgres database from their dashboard, and run `npm run seed` once.
+Both run a normal long-lived Node process, so `npm start` works as is; uploads go to the database there too. Set the same three environment variables, add a Postgres database from their dashboard, and run `npm run seed` once.
 
 ## Assignment requirements
 
