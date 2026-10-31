@@ -26,7 +26,7 @@ public/              static site served by Vercel (or by Express locally)
   about.html         About
   portfolio.html     Portfolio
   contact.html       Contact
-  modeling.html      standalone modeling gallery (css/modeling.css, js/modeling.js)
+  modeling.html      the model book: cover, comp card, the book, index, booking (css/modeling.css, js/modeling.js)
   css/style.css      the Obsidian & Crimson design system
   js/                main.js (shared) + one script per page; data-field.js, hero-motion.js and scroll-story.js are the homepage motion
   vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)

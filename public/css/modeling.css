@@ -1,18 +1,26 @@
 /* ============================================================
-   Modeling page, "Minimal Dark Gallery" theme.
-   Deliberately separate from the Neural Navy tech site: this page
-   is photo-forward and elegant, meant to be shared from Instagram.
+   Modeling page: a model book.
+
+   Same identity as the main site (Obsidian Black, Chrome Silver, Laser
+   Crimson Red, and the Archivo family), but tuned for fashion: the type is
+   set condensed and very tall instead of extra wide, the photographs do the
+   talking on a black gallery wall, and crimson only marks small things
+   (page numbers, the booking line).
    ============================================================ */
 
 :root {
-  --bg: #0A0A0B;
-  --surface: #141416;
-  --line: #26262a;
-  --text: #ECEAE6;
-  --dim: #9a9a9f;
-  --gold: #C9A96A;
-  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --font-ui: 'Jost', system-ui, sans-serif;
+  --bg: #080808;
+  --surface: #111111;
+  --line: rgba(205, 203, 202, 0.18);
+  --text: #F2F1F0;
+  --chrome: #CDCBCA;
+  --dim: #9A9897;
+  --red: #D41514;
+  --red-text: #F23A3B; /* brighter crimson for small text on black */
+  --font-display: 'Archivo', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --narrow: 62%;
+  --gutter: clamp(16px, 4vw, 56px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -26,242 +34,456 @@ html.lenis { scroll-behavior: auto; }
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-weight: 300;
+  color: var(--chrome);
+  font-family: var(--font-body);
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
+::selection { background: var(--red); color: var(--text); }
+
 img { display: block; max-width: 100%; }
-
 a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--red-text); outline-offset: 4px; }
 
-:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
-
-.wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; }
-
-/* ---------------------------------------------------------- header */
-
-.m-header {
-  text-align: center;
-  padding: clamp(56px, 12vh, 130px) 24px clamp(32px, 6vh, 64px);
-  position: relative;
-}
-
-.m-eyebrow {
-  font-family: var(--font-ui);
-  font-size: 0.72rem;
-  letter-spacing: 0.42em;
+/* Small tracked uppercase label, used throughout. */
+.mb-bar,
+.mb-cover__note,
+.mb-card dt,
+.mb-book__count,
+.mb-look__meta,
+.mb-filter,
+.mb-sheet__no,
+.mb-booking__kicker,
+.mb-btn,
+.mb-footer {
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
-  margin: 0 0 22px;
-  padding-left: 0.42em;
 }
 
-.m-name {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(2.8rem, 9vw, 6rem);
-  line-height: 0.98;
-  letter-spacing: 0.01em;
+.mb-skip {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 300;
+  padding: 8px 14px;
+  background: var(--red);
+  color: var(--text);
+}
+.mb-skip:focus { left: 8px; }
+
+.mb-h2 {
   margin: 0;
-}
-
-.m-tagline {
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(1.1rem, 2.6vw, 1.6rem);
-  color: var(--dim);
-  margin: 18px 0 0;
-}
-
-.m-links {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;
-}
-
-.m-ig {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 7vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 11px 22px;
-  transition: border-color 300ms var(--ease), color 300ms var(--ease);
 }
-.m-ig:hover { border-color: var(--gold); color: var(--gold); }
-.m-ig svg { width: 16px; height: 16px; fill: currentColor; }
 
-.m-rule {
-  width: 40px;
+/* ------------------------------------------------------------- top bar */
+
+/* Fixed over everything, and blended so it stays legible over photos too. */
+.mb-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 22px var(--gutter);
+  color: #fff;
+  mix-blend-mode: difference;
+}
+.mb-mark {
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.mb-mark span { color: var(--red); }
+.mb-bar__role { margin: 0; }
+.mb-bar__nav { justify-self: end; display: flex; gap: 28px; }
+.mb-bar__nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
+
+/* --------------------------------------------------------------- cover */
+
+/* Hidden only until the intro has set its start state (modeling.js), and at
+   most 2.5s (inline script in modeling.html). */
+.mb-intro .mb-name,
+.mb-intro .mb-cover__photo { visibility: hidden; }
+
+.mb-cover {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 96px var(--gutter) 48px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mb-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  font-family: var(--font-display);
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  font-size: clamp(4rem, 17vw, 17.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+/* Both lines sit behind the cover photo, like a magazine masthead behind
+   the model, so the layering works with any photo chosen as the cover. */
+.mb-name__line { display: block; position: relative; z-index: 1; white-space: nowrap; }
+.mb-name__line--first { align-self: flex-start; }
+.mb-name__line--last { align-self: flex-end; }
+
+.mb-cover__photo {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 52%;
+  width: clamp(220px, 27vw, 430px);
+  aspect-ratio: 3 / 4;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  background: var(--surface);
+}
+.mb-cover__photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.mb-cover__note {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 30px;
+  margin: 0;
+  color: var(--dim);
+}
+.mb-cover__note::before {
+  content: '';
+  display: inline-block;
+  width: 26px;
   height: 1px;
-  background: var(--gold);
-  margin: 40px auto 0;
-  opacity: 0.7;
+  margin-right: 12px;
+  vertical-align: middle;
+  background: var(--red);
 }
 
-/* --------------------------------------------------------- filters */
+@media (max-width: 700px) {
+  .mb-bar__role { display: none; }
+  .mb-bar { grid-template-columns: 1fr auto; }
+  .mb-cover { padding-top: 84px; }
+  .mb-name { font-size: 19vw; }
+  .mb-cover__photo { width: 74vw; top: 50%; }
+  .mb-cover__note { bottom: 18px; }
+}
 
-.m-filters {
+/* ----------------------------------------------------------- comp card */
+
+.mb-card {
+  margin: 0 var(--gutter);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.mb-card__list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+}
+.mb-card__list > div { padding: 26px 0; }
+.mb-card__list > div + div { padding-left: 26px; border-left: 1px solid var(--line); }
+.mb-card dt { color: var(--dim); margin-bottom: 10px; }
+.mb-card dd { margin: 0; color: var(--text); font-size: 0.98rem; line-height: 1.5; }
+.mb-card dd a { border-bottom: 1px solid var(--red); }
+.mb-card dd a:hover { color: var(--red-text); }
+
+@media (max-width: 860px) {
+  .mb-card__list { grid-template-columns: repeat(2, 1fr); }
+  .mb-card__list > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .mb-card__list > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+
+/* ------------------------------------------------------------ the book */
+
+.mb-book { padding: 120px 0 72px; }
+.mb-book__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 var(--gutter) 36px;
+}
+.mb-book__count { margin: 0 0 6px; color: var(--dim); }
+
+/* Without the scroll-driven pages (phones, reduced motion, no script) the
+   book is a row to swipe, snapping to each look. */
+.mb-book__viewport {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.mb-book__viewport::-webkit-scrollbar { display: none; }
+
+.mb-book__track {
+  display: flex;
+  gap: clamp(16px, 3vw, 48px);
+  width: max-content;
+  margin: 0;
+  padding: 0 var(--gutter);
+  list-style: none;
+}
+
+.mb-look { scroll-snap-align: center; }
+.mb-look__frame,
+.mb-sheet__item {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.mb-look__frame {
+  position: relative;
+  height: min(70vh, 760px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--surface);
+  cursor: zoom-in;
+}
+.mb-look__frame img {
+  /* Wider than its frame, so it can drift inside it as the pages turn. */
+  width: 118%;
+  max-width: none;
+  height: 100%;
+  margin-left: -9%;
+  object-fit: cover;
+  transition: transform 900ms var(--ease);
+}
+.mb-look__frame:hover img { transform: scale(1.03); }
+.mb-look__caption {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 14px;
+}
+.mb-look__no {
+  font-family: var(--font-display);
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--red-text);
+}
+.mb-look__no small { font-size: 0.7rem; color: var(--dim); font-weight: 600; letter-spacing: 0.1em; }
+.mb-look__title { color: var(--text); font-size: 0.92rem; }
+.mb-look__meta { color: var(--dim); margin-top: 3px; }
+
+.mb-book__progress {
+  height: 1px;
+  margin: 40px var(--gutter) 0;
+  background: var(--line);
+}
+.mb-book__progress span {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* With the scroll-driven pages (modeling.js adds .is-pinned): the section
+   fills the screen while the track slides across it. */
+.mb-book.is-pinned {
+  height: 100vh;
+  padding: 88px 0 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.mb-book.is-pinned .mb-book__viewport { overflow: visible; }
+.mb-book.is-pinned .mb-book__track { will-change: transform; }
+
+/* Phones: each look is a little narrower than the screen, so the next one
+   peeks in and invites a swipe. */
+@media (max-width: 700px) {
+  .mb-book__viewport { scroll-padding-inline: var(--gutter); }
+  .mb-look { scroll-snap-align: start; }
+  .mb-look__frame { height: auto; width: 78vw; }
+}
+
+/* --------------------------------------------------------------- index */
+
+.mb-index { padding: 72px var(--gutter) 40px; }
+.mb-index__head {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 28px;
-  justify-content: center;
-  padding: 8px 0 40px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 32px;
+  margin-bottom: 32px;
 }
 
-.m-filter {
+.mb-filters { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.mb-filter {
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
   background: none;
-  border: none;
   color: var(--dim);
-  font-family: var(--font-ui);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
   cursor: pointer;
-  padding: 6px 2px;
-  position: relative;
-  transition: color 300ms var(--ease);
+  transition: color 200ms var(--ease), border-color 200ms var(--ease);
 }
-.m-filter:hover { color: var(--text); }
-.m-filter[aria-pressed='true'] { color: var(--gold); }
-.m-filter[aria-pressed='true']::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -2px;
-  height: 1px;
-  background: var(--gold);
+.mb-filter:hover { color: var(--text); }
+.mb-filter[aria-pressed='true'] { color: var(--text); border-bottom-color: var(--red); }
+
+/* A contact sheet: small, even frames with their numbers underneath. */
+.mb-sheet {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 42vw), 1fr));
+  gap: 26px 12px;
 }
-
-/* --------------------------------------------------- masonry grid */
-
-.m-grid {
-  columns: 3 300px;
-  column-gap: 14px;
-  padding-bottom: 80px;
-}
-@media (max-width: 760px) { .m-grid { columns: 2 160px; column-gap: 10px; } }
-@media (max-width: 460px) { .m-grid { columns: 1; } }
-
-.m-item {
-  break-inside: avoid;
-  margin: 0 0 14px;
-  position: relative;
-  cursor: pointer;
-  background: var(--surface);
-  overflow: hidden;
+.mb-sheet__item {
+  margin: 0;
+  cursor: zoom-in;
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 600ms var(--ease), transform 600ms var(--ease);
 }
-.m-item.is-in { opacity: 1; transform: none; }
-
-.m-item img {
+.mb-sheet__item.is-in { opacity: 1; transform: none; }
+.mb-sheet__img {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--surface);
+}
+.mb-sheet__img img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85);
   transition: transform 700ms var(--ease), filter 400ms var(--ease);
 }
-.m-item:hover img { transform: scale(1.04); filter: brightness(1.08); }
+.mb-sheet__item:hover .mb-sheet__img img,
+.mb-sheet__item:focus-visible .mb-sheet__img img { transform: scale(1.05); filter: none; }
+.mb-sheet__no { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; color: var(--dim); }
+.mb-sheet__no b { color: var(--text); font-weight: 600; }
 
-.m-item__cap {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: 26px 16px 14px;
-  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-  opacity: 0;
-  transition: opacity 300ms var(--ease);
+.mb-empty {
+  color: var(--dim);
+  font-size: 0.9rem;
+  padding: 40px var(--gutter);
+  list-style: none;
 }
-.m-item:hover .m-item__cap { opacity: 1; }
-.m-item__title { font-family: var(--font-display); font-size: 1.15rem; }
-.m-item__meta {
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
+
+/* ------------------------------------------------------------- booking */
+
+.mb-booking {
+  padding: 120px var(--gutter) 110px;
+  border-top: 1px solid var(--line);
+  margin-top: 80px;
+  text-align: center;
+}
+.mb-booking__kicker { margin: 0 0 22px; color: var(--red-text); }
+.mb-booking__title {
+  margin: 0 0 40px;
+  font-family: var(--font-display);
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  font-size: clamp(3.4rem, 15vw, 14rem);
+  line-height: 0.82;
+  letter-spacing: -0.015em;
   text-transform: uppercase;
-  color: var(--gold);
-  margin-top: 3px;
+  color: var(--text);
 }
+.mb-booking__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
 
-/* ----------------------------------------------------- lightbox */
+.mb-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 16px 28px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  transition: background 200ms var(--ease), border-color 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.mb-btn:hover { border-color: var(--chrome); }
+.mb-btn--solid { background: var(--red); border-color: var(--red); }
+.mb-btn--solid:hover { border-color: var(--red); box-shadow: 0 0 36px rgba(212, 21, 20, 0.5); }
+
+/* -------------------------------------------------------------- footer */
+
+.mb-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 28px var(--gutter) 36px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+}
+.mb-footer a:hover { color: var(--text); }
+
+/* ------------------------------------------------------------ lightbox */
 
 .lightbox {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-  background: rgba(6, 6, 8, 0.96);
+  z-index: 200;
   display: none;
   align-items: center;
   justify-content: center;
+  background: rgba(8, 8, 8, 0.96);
 }
 .lightbox[data-open='true'] { display: flex; }
-
-.lightbox img {
-  max-width: 92vw;
-  max-height: 86vh;
-  object-fit: contain;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-}
-
-.lightbox__cap {
-  position: absolute;
-  bottom: 22px; left: 0; right: 0;
-  text-align: center;
-  color: var(--dim);
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-}
-.lightbox__cap .t { font-family: var(--font-display); font-size: 1.2rem; color: var(--text); display: block; margin-bottom: 4px; }
-
+.lightbox img { max-width: 88vw; max-height: 84vh; object-fit: contain; }
 .lightbox button {
   position: absolute;
   background: none;
-  border: none;
+  border: 0;
   color: var(--text);
   cursor: pointer;
   opacity: 0.75;
-  transition: opacity 200ms var(--ease);
-  font-family: var(--font-ui);
+  transition: opacity 200ms var(--ease), color 200ms var(--ease);
 }
-.lightbox button:hover { opacity: 1; color: var(--gold); }
-.lb-close { top: 20px; right: 26px; font-size: 2rem; line-height: 1; }
-.lb-prev, .lb-next { top: 50%; transform: translateY(-50%); font-size: 2.6rem; padding: 20px; }
+.lightbox button:hover { opacity: 1; color: var(--red-text); }
+.lb-close { top: 18px; right: 24px; font-size: 2.2rem; line-height: 1; }
+.lb-prev, .lb-next { top: 50%; transform: translateY(-50%); font-size: 2.8rem; padding: 20px; }
 .lb-prev { left: 8px; }
 .lb-next { right: 8px; }
-
-/* ------------------------------------------------------ footer */
-
-.m-footer {
-  text-align: center;
-  padding: 48px 24px 60px;
-  border-top: 1px solid var(--line);
-  color: var(--dim);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.m-footer a { color: var(--gold); }
-.m-back { display: inline-block; margin-top: 12px; color: var(--dim); }
-.m-back:hover { color: var(--text); }
-
-.m-empty {
+.lightbox__cap {
+  position: absolute;
+  bottom: 22px;
+  left: 0;
+  right: 0;
   text-align: center;
   color: var(--dim);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.3rem;
-  padding: 60px 0 100px;
+  font-size: 0.82rem;
 }
+.lightbox__cap .t { color: var(--text); margin-right: 10px; }
+
+/* ------------------------------------------------------- reduced motion */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
-  .m-item { opacity: 1; transform: none; }
-  .m-item:hover img { transform: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .mb-sheet__item { opacity: 1; transform: none; }
 }
