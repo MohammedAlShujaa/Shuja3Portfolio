@@ -51,6 +51,7 @@ a { color: inherit; text-decoration: none; }
 .mb-bar,
 .mb-cover__note,
 .mb-card dt,
+.mb-stats dt,
 .mb-book__count,
 .mb-look__meta,
 .mb-filter,
@@ -214,6 +215,45 @@ a { color: inherit; text-decoration: none; }
 .mb-card dd a { border-bottom: 1px solid var(--red); }
 .mb-card dd a:hover { color: var(--red-text); }
 
+/* Measurements: big condensed figures with small units, five to a row. */
+.mb-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.mb-stats > div { padding: 22px 0 24px; }
+.mb-stats > div:not(:nth-child(5n + 1)) { padding-left: 22px; border-left: 1px solid var(--line); }
+.mb-stats > div:nth-child(n + 6) { border-top: 1px solid var(--line); }
+.mb-stats dt { color: var(--dim); margin-bottom: 8px; }
+.mb-stats dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.mb-stats dd small {
+  margin-left: 4px;
+  font-family: var(--font-body);
+  font-stretch: 100%;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--dim);
+}
+
+@media (max-width: 860px) {
+  .mb-stats { grid-template-columns: repeat(2, 1fr); }
+  .mb-stats > div { padding-left: 0 !important; border-left: 0 !important; }
+  .mb-stats > div:nth-child(even) { padding-left: 22px !important; border-left: 1px solid var(--line) !important; }
+  .mb-stats > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+
 @media (max-width: 860px) {
   .mb-card__list { grid-template-columns: repeat(2, 1fr); }
   .mb-card__list > div:nth-child(3) { padding-left: 0; border-left: 0; }
@@ -222,7 +262,9 @@ a { color: inherit; text-decoration: none; }
 
 /* ------------------------------------------------------------ the book */
 
-.mb-book { padding: 120px 0 72px; }
+/* The track is far wider than the screen; clip it here so nothing (such as
+   focusing an off-screen look) can scroll the page sideways. */
+.mb-book { padding: 120px 0 72px; overflow: hidden; overflow: clip; }
 .mb-book__head {
   display: flex;
   align-items: flex-end;
