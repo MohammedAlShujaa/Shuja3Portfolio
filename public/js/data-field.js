@@ -125,10 +125,12 @@
   const lowPower = (navigator.hardwareConcurrency || 8) <= 4;
   const N = small || lowPower ? 2000 : 4000;
 
+  // The site's palette on black: mostly chrome and white, with one crimson
+  // cluster (the one framing the portrait).
   const COLORS = [
-    [0.133, 0.827, 0.933], // cyan    #22D3EE
-    [0.655, 0.545, 0.980], // violet  #A78BFA
-    [0.984, 0.749, 0.141]  // amber   #FBBF24
+    [0.804, 0.796, 0.792], // Chrome Silver      #CDCBCA
+    [0.831, 0.082, 0.078], // Laser Crimson Red  #D41514
+    [0.62, 0.615, 0.61]    // soft white, dimmed so it does not compete
   ];
 
   // Seeded random numbers, so the field looks the same on every visit.
@@ -160,14 +162,15 @@
     const wave = new Float32Array(N * 2);
 
     // Hero: three clusters, kept in the open space around the hero's text:
-    // between the text and the photo, around the photo, and below the buttons
+    // between the text and the photo, around the photo, and a band along the
+    // bottom edge
     // (on phones: beside the photo, and a thin band along the bottom edge).
     const centres = portrait
       ? [[-0.62 * A, 0.7], [0.62 * A, 0.62], [0.0, -0.97]]
-      : [[0.2 * A, 0.32], [0.8 * A, 0.58], [-0.25 * A, -0.58]];
+      : [[0.2 * A, 0.32], [0.8 * A, 0.58], [-0.05 * A, -0.88]];
     const spreads = portrait
       ? [[0.16 * A, 0.1], [0.16 * A, 0.1], [0.4 * A, 0.04]]
-      : [[0.09 * A, 0.16], [0.1 * A, 0.12], [0.24 * A, 0.1]];
+      : [[0.09 * A, 0.16], [0.1 * A, 0.12], [0.34 * A, 0.06]];
 
     // Neural network: on the right on wide screens (the hero's text is on the
     // left as it scrolls away), in the upper part of tall screens.

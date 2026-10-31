@@ -182,6 +182,14 @@ function contactListHtml(socials, profile) {
 
 /* --------------------------------------------------- page injectors */
 
+// The hero name, with its last word (the surname) wrapped so it shows in crimson.
+function nameHtml(headline) {
+  const text = String(headline || '').trim();
+  const cut = text.lastIndexOf(' ');
+  if (cut === -1) return esc(text);
+  return `${esc(text.slice(0, cut))} <span class="hero__name-accent">${esc(text.slice(cut + 1))}</span>`;
+}
+
 // The hero buttons, including the CV button, which only appears once a resume
 // link is set so it is never a dead button.
 function heroCtasHtml(profile) {
@@ -199,7 +207,8 @@ function injectHome(html, { profile, projects, socials }) {
   if (profile) {
     if (profile.photo_url) html = put(html, 'src="/img/profile-placeholder.svg"', `src="${esc(profile.photo_url)}"`);
     html = put(html, 'alt="Mohammed Al-Shujaa, profile photo"', `alt="${esc(profile.name)}, profile photo"`);
-    html = put(html, 'data-hero-name>Mohammed Al-Shujaa</h1>', `data-hero-name>${esc(profile.headline)}</h1>`);
+    html = put(html, 'data-hero-name>Mohammed <span class="hero__name-accent">Al-Shujaa</span></h1>',
+      `data-hero-name>${nameHtml(profile.headline)}</h1>`);
     html = put(html, 'data-hero-subheading></p>', `data-hero-subheading>${subheadingHtml(profile.subheading)}</p>`);
     html = put(html, 'data-hero-intro></p>', `data-hero-intro>${esc(profile.intro)}</p>`);
     html = html.replace(/(<div class="hero__ctas">)[\s\S]*?(<\/div>)/, (m, open, close) => open + heroCtasHtml(profile) + close);
