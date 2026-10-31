@@ -8,7 +8,7 @@
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
@@ -16,22 +16,34 @@
   <header class="topbar">
     <div class="topbar__brand">shujaa<span>.</span> admin</div>
     <div class="topbar__right">
-      <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site</a>
+      <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View portfolio</a>
+      <a class="btn btn--ghost btn--sm" href="/modeling" target="_blank" rel="noopener">View model book</a>
       <button class="btn btn--ghost btn--sm" type="button" id="logout">Sign out</button>
     </div>
   </header>
 
   <main class="shell">
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-tab="profile" aria-selected="true">Profile</button>
-      <button class="tab" role="tab" data-tab="projects" aria-selected="false">Projects</button>
-      <button class="tab" role="tab" data-tab="skills" aria-selected="false">Skills</button>
-      <button class="tab" role="tab" data-tab="updates" aria-selected="false">Updates</button>
-      <button class="tab" role="tab" data-tab="socials" aria-selected="false">Social links</button>
-      <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Modeling</button>
-      <button class="tab" role="tab" data-tab="messages" aria-selected="false">
-        Messages<span class="tab__badge" id="unread-badge" hidden>0</span>
-      </button>
+    <!-- One admin for both sites: the engineering portfolio and the model book. -->
+    <div class="tabs" role="tablist" aria-label="Admin sections">
+      <div class="tabs__group" role="presentation">
+        <span class="tabs__label" aria-hidden="true">Portfolio</span>
+        <button class="tab" role="tab" data-tab="profile" aria-selected="true">Profile</button>
+        <button class="tab" role="tab" data-tab="projects" aria-selected="false">Projects</button>
+        <button class="tab" role="tab" data-tab="skills" aria-selected="false">Skills</button>
+        <button class="tab" role="tab" data-tab="updates" aria-selected="false">Updates</button>
+        <button class="tab" role="tab" data-tab="socials" aria-selected="false">Social links</button>
+      </div>
+      <div class="tabs__group" role="presentation">
+        <span class="tabs__label" aria-hidden="true">Modeling</span>
+        <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Photos</button>
+        <button class="tab" role="tab" data-tab="model" aria-selected="false">Model details</button>
+      </div>
+      <div class="tabs__group" role="presentation">
+        <span class="tabs__label" aria-hidden="true">Inbox</span>
+        <button class="tab" role="tab" data-tab="messages" aria-selected="false">
+          Messages<span class="tab__badge" id="unread-badge" hidden>0</span>
+        </button>
+      </div>
     </div>
 
     <!-- ------------------------------------------------------ profile -->
@@ -58,7 +70,7 @@
         <div class="field">
           <label for="p-subheading">Subheading</label>
           <input type="text" id="p-subheading" name="subheading">
-          <p class="hint">The words "machine learning" are shown in the cyan to violet gradient on the home page.</p>
+          <p class="hint">The words "machine learning" are shown in crimson on the home page.</p>
         </div>
 
         <div class="field">
@@ -67,14 +79,14 @@
         </div>
 
         <div class="field">
-          <label for="p-photo">Profile photo URL</label>
-          <input type="text" id="p-photo" name="photo_url" placeholder="/uploads/photo.jpg or https://...">
+          <label for="p-photo">Profile photo</label>
+          <input type="text" id="p-photo" name="photo_url" placeholder="/media/12 or https://...">
           <div class="btn-row" style="margin-top: 8px;">
-            <input type="file" id="p-photo-file" accept="image/*" style="display: none;">
-            <button class="btn btn--ghost btn--sm" type="button" data-upload-for="p-photo">Upload an image</button>
+            <input type="file" id="p-photo-file" accept="image/*" hidden>
+            <button class="btn btn--ghost btn--sm" type="button" data-upload-for="p-photo">Upload from device</button>
           </div>
-          <p class="hint">Paste a URL, or upload a file when running locally. Uploads are disabled on Vercel.</p>
-          <img class="thumb-preview" id="p-photo-preview" alt="Profile photo preview" hidden>
+          <p class="hint">Upload a photo from your phone or computer (it is resized for you), or paste an image URL. Then save the profile.</p>
+          <img class="thumb-preview thumb-preview--round" id="p-photo-preview" alt="Profile photo preview" hidden>
         </div>
 
         <div class="grid-2">
@@ -162,20 +174,81 @@
       <div id="socials-list"><p class="muted">Loading ...</p></div>
     </section>
 
-    <!-- ------------------------------------------------------ gallery -->
+    <!-- ------------------------------------------------------- photos -->
     <section class="panel" data-panel="gallery">
       <div class="panel__head">
         <div>
-          <h2>Modeling gallery</h2>
+          <h2>Photos</h2>
           <p class="muted" style="margin: 0;">
-            Photos for the standalone modeling page at
-            <a href="/modeling.html" target="_blank" rel="noopener">/modeling.html</a>.
-            Use image URLs from your Supabase Storage bucket.
+            The looks in the <a href="/modeling" target="_blank" rel="noopener">model book</a>, in book order.
+            Changes save as you make them.
           </p>
         </div>
-        <button class="btn btn--primary" type="button" id="add-gallery">Add photo</button>
+        <button class="btn btn--ghost btn--sm" type="button" id="add-gallery-url">Add by URL</button>
       </div>
-      <div id="gallery-list"><p class="muted">Loading ...</p></div>
+
+      <label class="drop" id="photo-drop" for="photo-files">
+        <input type="file" id="photo-files" accept="image/*" multiple hidden>
+        <span class="drop__title">Drop photos here, or <span class="drop__link">choose from your device</span></span>
+        <span class="drop__hint">Select as many as you like. Each one is resized for the web and added to the end of the book.</span>
+      </label>
+      <div class="drop__options">
+        <label for="photo-category">Add new photos as</label>
+        <select id="photo-category"></select>
+      </div>
+      <ul class="queue" id="photo-queue" aria-live="polite"></ul>
+
+      <p class="photo-help muted">
+        <strong>Star</strong> a photo to make it the cover. <strong>Drag</strong> photos (or use the arrows) to change the order.
+        Edit a title, category or credit and it saves on its own.
+      </p>
+      <div class="photo-grid" id="gallery-list"><p class="muted">Loading ...</p></div>
+    </section>
+
+    <!-- -------------------------------------------------- model details -->
+    <section class="panel" data-panel="model">
+      <div class="panel__head">
+        <div>
+          <h2>Model details</h2>
+          <p class="muted" style="margin: 0;">
+            The cover line, the comp card and the measurements in the
+            <a href="/modeling" target="_blank" rel="noopener">model book</a>. Leave a field empty to hide it.
+          </p>
+        </div>
+      </div>
+
+      <form class="card" id="model-form">
+        <div class="field">
+          <label for="m-cover">Cover line</label>
+          <input type="text" id="m-cover" name="cover_line" placeholder="Menswear model, 184 cm">
+          <p class="hint">The small line at the bottom of the cover.</p>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="m-based">Based in</label>
+            <input type="text" id="m-based" name="based_in">
+          </div>
+          <div class="field">
+            <label for="m-languages">Languages</label>
+            <input type="text" id="m-languages" name="languages">
+          </div>
+          <div class="field">
+            <label for="m-instagram">Instagram username</label>
+            <input type="text" id="m-instagram" name="instagram" placeholder="shuj0a">
+            <p class="hint">Used on the comp card and the "Message on Instagram" button.</p>
+          </div>
+          <div class="field">
+            <label>Available for</label>
+            <p class="hint" style="margin-top: 10px;">Filled in automatically from the categories of your photos.</p>
+          </div>
+        </div>
+
+        <h3 class="form-section">Measurements</h3>
+        <div class="measure-grid" id="m-measurements"></div>
+
+        <button class="btn btn--primary" type="submit">Save model details</button>
+        <p class="form-error" data-error></p>
+      </form>
     </section>
 
     <!-- ----------------------------------------------------- messages -->

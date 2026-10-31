@@ -15,6 +15,7 @@ const cookieSession = require('cookie-session');
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
 const db = require('./db');
+const model = require('./model');
 const { renderPage, NEEDS } = require('./render');
 const { requireAuthPage } = require('./auth');
 
@@ -27,7 +28,7 @@ app.set('trust proxy', 1);
 // the fact that all database content is inserted as text, never as HTML. Inline
 // scripts and styles are allowed because the static pages use them and cannot
 // carry a per-request nonce; everything external is restricted to the CDNs the
-// site actually uses (Google Fonts, Devicon) plus Supabase for images.
+// site actually uses (Google Fonts, Devicon), plus https images pasted by URL.
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -114,11 +115,15 @@ async function collect(names) {
     else if (n === 'socials') out.socials = await db.listSocials();
     else if (n === 'skills') out.skills = await db.listSkills();
     else if (n === 'updates') out.updates = await db.listUpdates();
+    else if (n === 'gallery') out.gallery = await db.listGallery();
+    else if (n === 'model') out.model = await model.getModel();
   }));
   return out;
 }
 
-const PAGE_FILE = { index: 'home.html', about: 'about.html', portfolio: 'portfolio.html', contact: 'contact.html' };
+const PAGE_FILE = {
+  index: 'home.html', about: 'about.html', portfolio: 'portfolio.html', contact: 'contact.html', modeling: 'modeling.html'
+};
 
 const ssrRoute = (name) => async (req, res, next) => {
   try {
@@ -135,6 +140,21 @@ app.get('/', ssrRoute('index'));
 app.get('/about', ssrRoute('about'));
 app.get('/portfolio', ssrRoute('portfolio'));
 app.get('/contact', ssrRoute('contact'));
+app.get('/modeling', ssrRoute('modeling'));
+
+// Images uploaded in the admin panel, stored in the database (see db.js). An id
+// is never reused for different content, so they can be cached for a year.
+app.get(/^\/media\/(\d+)$/, async (req, res, next) => {
+  try {
+    const media = await db.getMedia(Number(req.params[0]));
+    if (!media) return next();
+    res.set('Content-Type', media.content_type);
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(media.data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // The home template was renamed to home.html; send its old paths to the canonical /.
 app.get(['/home', '/home.html'], (req, res) => res.redirect(301, '/'));

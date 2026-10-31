@@ -24,7 +24,7 @@ const templateCache = {};
 
 // The home template lives at home.html, not index.html, so that Vercel does not
 // serve it as a static directory index and bypass server-side rendering.
-const TEMPLATE_FILE = { index: 'home', about: 'about', portfolio: 'portfolio', contact: 'contact' };
+const TEMPLATE_FILE = { index: 'home', about: 'about', portfolio: 'portfolio', contact: 'contact', modeling: 'modeling' };
 
 function template(name) {
   if (!templateCache[name]) {
@@ -249,6 +249,54 @@ function injectContact(html, { profile, socials }) {
   return html;
 }
 
+/* --------------------------------------------------------- modeling */
+
+const { MEASUREMENTS } = require('./model');
+const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
+
+// Replaces everything between <!--model:NAME--> and <!--/model:NAME--> in the
+// modeling template. The template keeps sensible defaults there, which show if
+// server rendering ever falls back to the raw file.
+const block = (html, name, inner) =>
+  html.replace(new RegExp(`(<!--model:${name}-->)[\\s\\S]*?(<!--/model:${name}-->)`), (m, open, close) => open + inner + close);
+
+const igUrl = (handle) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
+
+function modelCardHtml(model, gallery) {
+  const present = GALLERY_CATEGORIES.filter((c) => (gallery || []).some((g) => g.category === c));
+  const available = (present.length ? present : GALLERY_CATEGORIES).join(', ');
+
+  const facts = [];
+  if (model.based_in) facts.push(['Based in', esc(model.based_in)]);
+  if (model.languages) facts.push(['Languages', esc(model.languages)]);
+  facts.push(['Available for', esc(available), ' data-available']);
+  if (model.instagram) {
+    facts.push(['Instagram', `<a href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">@${esc(model.instagram)}</a>`]);
+  }
+  const list = facts.map(([dt, dd, attr = '']) => `<div><dt>${dt}</dt><dd${attr}>${dd}</dd></div>`).join('');
+
+  const stats = MEASUREMENTS
+    .filter(({ key }) => model.measurements && model.measurements[key])
+    .map(({ key, label, unit }) => {
+      const value = esc(model.measurements[key]).replace(/-/g, '&ndash;');
+      return `<div><dt>${label}</dt><dd>${value}${unit ? `<small>${unit}</small>` : ''}</dd></div>`;
+    })
+    .join('');
+
+  return `<dl class="mb-card__list">${list}</dl>` +
+    (stats ? `<dl class="mb-stats" aria-label="Measurements">${stats}</dl>` : '');
+}
+
+function injectModeling(html, { model, gallery }) {
+  if (!model) return html;
+  html = block(html, 'note', esc(model.cover_line));
+  html = block(html, 'card', modelCardHtml(model, gallery));
+  html = block(html, 'instagram', model.instagram
+    ? `<a class="mb-btn mb-btn--solid" href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">Message on Instagram</a>`
+    : '');
+  return html;
+}
+
 /* ------------------------------------------------------- public API */
 
 // Which data each page needs, so routes only query what they use.
@@ -256,14 +304,16 @@ const NEEDS = {
   index: ['profile', 'projects', 'socials'],
   portfolio: ['projects', 'socials'],
   about: ['profile', 'skills', 'updates', 'socials'],
-  contact: ['profile', 'socials']
+  contact: ['profile', 'socials'],
+  modeling: ['model', 'gallery']
 };
 
 const INJECTORS = {
   index: injectHome,
   portfolio: injectPortfolio,
   about: injectAbout,
-  contact: injectContact
+  contact: injectContact,
+  modeling: injectModeling
 };
 
 function renderPage(name, data) {

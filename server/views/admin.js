@@ -119,29 +119,43 @@ async function makeSquareThumb(file, size, quality) {
   return canvasToJpeg(canvas, quality);
 }
 
-async function uploadGalleryImage(file, name) {
-  const [full, thumb] = await Promise.all([
-    resizeToLongEdge(file, 2000, 0.82),
-    makeSquareThumb(file, 700, 0.82)
-  ]);
-  const fd = new FormData();
-  fd.append('full', full, 'full.jpg');
-  fd.append('thumb', thumb, 'thumb.jpg');
-  fd.append('name', name || 'photo');
-
-  const res = await fetch('/api/admin/gallery/upload', { method: 'POST', body: fd });
+// Sends a multipart form to an admin route and returns the JSON reply.
+async function postForm(path, formData) {
+  const res = await fetch(`/api/admin${path}`, { method: 'POST', body: formData });
   if (res.status === 401) {
     location.href = '/admin/login';
     throw new Error('Session expired.');
   }
   const body = await res.json().catch(() => null);
   if (!res.ok) throw new Error((body && body.error) || 'Upload failed.');
-  return body; // { image_url, thumb_url }
+  return body;
+}
+
+// Resizing needs the browser to read the photo; some formats (such as HEIC from
+// a phone, outside Safari) it cannot, so say what to do instead.
+async function readable(work) {
+  try {
+    return await work();
+  } catch {
+    const err = new Error('This photo could not be read. Please use a JPG, PNG or WebP image.');
+    err.unreadable = true;
+    throw err;
+  }
+}
+
+// Uploads one image (shrunk in the browser first) and returns its URL, /media/<id>.
+async function uploadMedia(file, maxEdge = 1600) {
+  const blob = await readable(() => resizeToLongEdge(file, maxEdge, 0.85));
+  const fd = new FormData();
+  fd.append('image', blob, 'image.jpg');
+  const { url } = await postForm('/media', fd);
+  return url;
 }
 
 // Builds one labelled input from a small spec, so every editor form looks the same.
 function buildField(spec) {
-  // A file picker that resizes and uploads to Supabase, then fills the URL fields.
+  // A file picker that resizes and uploads the image, then fills in the URL field
+  // named by spec.target.
   if (spec.type === 'upload') {
     const wrap = el('div', 'field');
     const id = `f-${spec.name}`;
@@ -163,13 +177,11 @@ function buildField(spec) {
       status.textContent = 'Resizing and uploading, please wait ...';
       input.disabled = true;
       try {
-        const guess = (editorForm.elements.title && editorForm.elements.title.value) || file.name;
-        const { image_url, thumb_url } = await uploadGalleryImage(file, guess);
-        if (editorForm.elements.image_url) editorForm.elements.image_url.value = image_url;
-        if (editorForm.elements.thumb_url) editorForm.elements.thumb_url.value = thumb_url || '';
-        preview.src = thumb_url || image_url;
+        const url = await uploadMedia(file, spec.maxEdge || 1600);
+        if (editorForm.elements[spec.target]) editorForm.elements[spec.target].value = url;
+        preview.src = url;
         preview.hidden = false;
-        status.textContent = 'Uploaded. Add a category and title if you like, then Save.';
+        status.textContent = 'Uploaded. Save to keep it.';
       } catch (err) {
         status.textContent = err.message;
       } finally {
@@ -316,20 +328,7 @@ document.getElementById('p-photo').addEventListener('input', syncPhotoPreview);
 
 /* ----------------------------------------------------------- upload */
 
-async function uploadImage(file) {
-  const data = new FormData();
-  data.append('image', file);
-  const res = await fetch('/api/admin/upload', { method: 'POST', body: data });
-  if (res.status === 401) {
-    location.href = '/admin/login';
-    throw new Error('Session expired.');
-  }
-  const body = await res.json();
-  if (!res.ok) throw new Error(body.error || 'Upload failed.');
-  return body.url;
-}
-
-// Wires the "Upload an image" button on the profile form to the hidden file input.
+// Wires the "Upload from device" button on the profile form to the hidden file input.
 document.querySelectorAll('[data-upload-for]').forEach((button) => {
   const target = document.getElementById(button.dataset.uploadFor);
   const fileInput = document.getElementById(`${button.dataset.uploadFor}-file`);
@@ -337,14 +336,16 @@ document.querySelectorAll('[data-upload-for]').forEach((button) => {
   fileInput.addEventListener('change', async () => {
     if (!fileInput.files.length) return;
     button.disabled = true;
+    button.textContent = 'Uploading ...';
     try {
-      target.value = await uploadImage(fileInput.files[0]);
+      target.value = await uploadMedia(fileInput.files[0], 1200);
       syncPhotoPreview();
-      toast('Image uploaded. Remember to save.');
+      toast('Photo uploaded. Save the profile to use it.');
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       button.disabled = false;
+      button.textContent = 'Upload from device';
       fileInput.value = '';
     }
   });
@@ -357,7 +358,8 @@ const projectFields = (p = {}) => [
   { name: 'description', label: 'Description', type: 'textarea', value: p.description, required: true },
   { name: 'category', label: 'Category', type: 'select', options: CATEGORIES, value: p.category || CATEGORIES[0] },
   { name: 'tech_tags', label: 'Tech tags', value: p.tech_tags, hint: 'Separate with commas, for example: Python, NLTK, t-SNE' },
-  { name: 'thumbnail_url', label: 'Thumbnail URL', value: p.thumbnail_url, hint: 'Paste an image URL, or a path such as /uploads/shot.png' },
+  { name: '_thumb_upload', type: 'upload', target: 'thumbnail_url', maxEdge: 1600, label: 'Upload a thumbnail from your device', hint: 'A screenshot or image of the project. It is resized for you and fills in the field below.' },
+  { name: 'thumbnail_url', label: 'Thumbnail URL', value: p.thumbnail_url, hint: 'Filled in by the upload above, or paste an image URL.' },
   { name: 'github_url', label: 'GitHub URL', value: p.github_url, hint: 'Leave empty if there is no public repository. Empty means no link is shown, never a dead one.' },
   { name: 'live_url', label: 'Live demo URL', value: p.live_url, hint: 'For example a Streamlit or Gradio demo on Hugging Face Spaces.' },
   { name: 'featured', label: 'Featured (shown on the home page)', type: 'checkbox', value: p.featured },
@@ -702,97 +704,346 @@ document.getElementById('add-social').addEventListener('click', () => {
   });
 });
 
-/* ---------------------------------------------------------- gallery */
+/* ----------------------------------------------------------- photos */
+
+// The model book's photos, managed as a grid in book order: drop or pick many
+// photos at once; edit title, category and credit in place (saved as you type);
+// star the cover; drag or use the arrows to reorder; delete.
 
 const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
+const pad2 = (n) => String(n).padStart(2, '0');
+let photos = [];
 
-const galleryFields = (g = {}) => [
-  { name: '_upload', type: 'upload', label: 'Upload a photo from your computer', hint: 'It is resized in your browser and sent to Supabase automatically. The two URL fields below fill in for you. You can also paste URLs by hand instead.' },
-  { name: 'image_url', label: 'Full image URL', value: g.image_url, required: true, hint: 'The large web version. Filled in by the upload above, or paste a URL.' },
-  { name: 'thumb_url', label: 'Thumbnail URL (optional)', value: g.thumb_url, hint: 'A smaller version for the grid. Leave empty to reuse the full image.' },
-  { name: 'category', label: 'Category', type: 'select', options: GALLERY_CATEGORIES, value: g.category || GALLERY_CATEGORIES[0] },
-  { name: 'title', label: 'Title (optional)', value: g.title, hint: 'For example: MMS Casting, Batch 5.' },
-  { name: 'credit', label: 'Credit (optional)', value: g.credit, hint: 'For example: Photo by ..., MUA ..., for ... brand.' },
-  { name: 'featured', label: 'Featured (candidate for the cover)', type: 'checkbox', value: g.featured },
-  { name: 'sort_order', label: 'Sort order', type: 'number', value: g.sort_order ?? 0 }
-];
+const photoHost = document.getElementById('gallery-list');
+const photoQueue = document.getElementById('photo-queue');
+const photoCategory = document.getElementById('photo-category');
+GALLERY_CATEGORIES.forEach((c) => photoCategory.appendChild(Object.assign(el('option', null, c), { value: c })));
 
 async function loadGallery() {
-  const host = document.getElementById('gallery-list');
-  const gallery = await get('/gallery');
-  host.innerHTML = '';
+  photos = await get('/gallery');
+  renderPhotos();
+}
 
-  if (!gallery.length) {
-    host.appendChild(el('p', 'muted', 'No photos yet. Add your first one.'));
+function renderPhotos() {
+  photoHost.innerHTML = '';
+  if (!photos.length) {
+    photoHost.appendChild(el('p', 'muted', 'No photos yet. Drop some above to start the book.'));
     return;
   }
+  photos.forEach((g, i) => photoHost.appendChild(photoTile(g, i)));
+}
 
-  gallery.forEach((g) => {
-    const card = el('div', 'card');
-    const row = el('div', 'card__row');
+// Saves the order shown in `photos` (first to last).
+async function saveOrder() {
+  try {
+    await put('/gallery/order', { ids: photos.map((p) => p.id) });
+    photos.forEach((p, i) => { p.sort_order = i + 1; });
+  } catch (err) {
+    toast(err.message, 'error');
+    await loadGallery();
+  }
+}
 
-    const left = el('div');
-    left.style.cssText = 'display:flex;gap:12px;align-items:flex-start;';
-    const thumb = el('img');
-    thumb.src = g.thumb_url || g.image_url;
-    thumb.alt = g.title || 'Photo';
-    thumb.style.cssText = 'width:64px;height:64px;object-fit:cover;border:1px solid var(--border);border-radius:6px;background:var(--bg);';
-    left.appendChild(thumb);
+function move(index, delta) {
+  const to = index + delta;
+  if (to < 0 || to >= photos.length) return;
+  [photos[index], photos[to]] = [photos[to], photos[index]];
+  renderPhotos();
+  photoHost.querySelectorAll('.photo')[to].querySelector(delta < 0 ? '[data-move="-1"]' : '[data-move="1"]').focus();
+  saveOrder();
+}
 
-    const meta = el('div');
-    const head = el('div');
-    head.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;';
-    head.appendChild(el('span', 'pill', g.category));
-    if (g.featured) head.appendChild(el('span', 'pill pill--featured', 'Cover'));
-    meta.appendChild(head);
-    meta.appendChild(el('strong', null, g.title || '(no title)'));
-    meta.appendChild(el('p', 'mono', `sort ${g.sort_order}${g.credit ? ' · ' + g.credit : ''}`));
-    left.appendChild(meta);
+function photoTile(g, index) {
+  const tile = el('article', 'photo');
+  tile.draggable = true;
+  tile.dataset.id = g.id;
 
-    const right = el('div', 'btn-row');
-    const edit = el('button', 'btn btn--ghost btn--sm', 'Edit');
-    edit.addEventListener('click', () => {
-      openEditor({
-        title: 'Edit photo',
-        fields: galleryFields(g),
-        onSubmit: async (values) => {
-          await put(`/gallery/${g.id}`, values);
-          toast('Photo saved.');
-          await loadGallery();
-        }
-      });
-    });
-    const remove = el('button', 'btn btn--danger btn--sm', 'Delete');
-    remove.addEventListener('click', async () => {
-      if (!confirmDelete(`this photo${g.title ? ' (' + g.title + ')' : ''}`)) return;
+  // The picture, its book number, and the cover star.
+  const pic = el('div', 'photo__pic');
+  const img = el('img');
+  img.src = g.thumb_url || g.image_url;
+  img.alt = '';
+  img.loading = 'lazy';
+  img.draggable = false;
+  pic.appendChild(img);
+  pic.appendChild(el('span', 'photo__no', pad2(index + 1)));
+
+  const star = el('button', 'photo__star', g.featured ? '★' : '☆');
+  star.type = 'button';
+  star.setAttribute('aria-pressed', String(Boolean(g.featured)));
+  star.setAttribute('aria-label', g.featured ? 'This is the cover' : 'Make this the cover');
+  star.title = g.featured ? 'This is the cover' : 'Make this the cover';
+  star.addEventListener('click', async () => {
+    try {
+      await put(`/gallery/${g.id}/cover`, {});
+      photos.forEach((p) => { p.featured = p.id === g.id; });
+      renderPhotos();
+      toast('Cover changed.');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+  pic.appendChild(star);
+  if (g.featured) pic.appendChild(el('span', 'photo__cover', 'Cover'));
+  tile.appendChild(pic);
+
+  // Title, category and credit, saved a moment after you stop typing.
+  const fields = el('div', 'photo__fields');
+  const status = el('span', 'photo__status', '');
+  let timer;
+  const save = () => {
+    clearTimeout(timer);
+    status.textContent = 'Saving ...';
+    timer = setTimeout(async () => {
       try {
-        await del(`/gallery/${g.id}`);
-        toast('Photo deleted.');
-        await loadGallery();
+        const updated = await put(`/gallery/${g.id}`, { ...g, title: title.value.trim(), category: category.value, credit: credit.value.trim() });
+        Object.assign(g, updated);
+        status.textContent = 'Saved';
       } catch (err) {
+        status.textContent = '';
         toast(err.message, 'error');
       }
-    });
-    right.appendChild(edit);
-    right.appendChild(remove);
+    }, 600);
+  };
 
-    row.appendChild(left);
-    row.appendChild(right);
-    card.appendChild(row);
-    host.appendChild(card);
+  const title = el('input');
+  title.type = 'text';
+  title.value = g.title || '';
+  title.placeholder = `Look ${pad2(index + 1)}`;
+  title.setAttribute('aria-label', 'Title');
+  title.addEventListener('input', save);
+
+  const category = el('select');
+  category.setAttribute('aria-label', 'Category');
+  GALLERY_CATEGORIES.forEach((c) => category.appendChild(Object.assign(el('option', null, c), { value: c })));
+  category.value = g.category;
+  category.addEventListener('change', save);
+
+  const credit = el('input');
+  credit.type = 'text';
+  credit.value = g.credit || '';
+  credit.placeholder = 'Credit (optional)';
+  credit.setAttribute('aria-label', 'Credit');
+  credit.addEventListener('input', save);
+
+  fields.append(title, category, credit);
+  tile.appendChild(fields);
+
+  // Move earlier or later, and delete.
+  const actions = el('div', 'photo__actions');
+  const left = el('button', 'icon-btn', '←');
+  left.type = 'button';
+  left.dataset.move = '-1';
+  left.setAttribute('aria-label', 'Move earlier');
+  left.disabled = index === 0;
+  left.addEventListener('click', () => move(index, -1));
+  const right = el('button', 'icon-btn', '→');
+  right.type = 'button';
+  right.dataset.move = '1';
+  right.setAttribute('aria-label', 'Move later');
+  right.disabled = index === photos.length - 1;
+  right.addEventListener('click', () => move(index, 1));
+  const remove = el('button', 'icon-btn icon-btn--danger', 'Delete');
+  remove.type = 'button';
+  remove.addEventListener('click', async () => {
+    if (!confirmDelete(`look ${pad2(index + 1)}${g.title ? ` (${g.title})` : ''}`)) return;
+    try {
+      await del(`/gallery/${g.id}`);
+      photos = photos.filter((p) => p.id !== g.id);
+      renderPhotos();
+      toast('Photo deleted.');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+  actions.append(left, right, status, remove);
+  tile.appendChild(actions);
+
+  // Drag to reorder (mouse; the arrows do the same on touch screens).
+  tile.addEventListener('dragstart', (e) => {
+    tile.classList.add('is-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(g.id));
+  });
+  tile.addEventListener('dragend', () => {
+    tile.classList.remove('is-dragging');
+    const order = [...photoHost.querySelectorAll('.photo')].map((t) => Number(t.dataset.id));
+    if (order.join() === photos.map((p) => p.id).join()) return;
+    photos = order.map((id) => photos.find((p) => p.id === id));
+    renderPhotos();
+    saveOrder();
+  });
+  return tile;
+}
+
+// While dragging a photo, move it in the grid to where the pointer is.
+photoHost.addEventListener('dragover', (e) => {
+  const dragging = photoHost.querySelector('.is-dragging');
+  if (!dragging) return;
+  e.preventDefault();
+  const over = e.target.closest('.photo');
+  if (!over || over === dragging) return;
+  const r = over.getBoundingClientRect();
+  const after = e.clientX > r.left + r.width / 2;
+  photoHost.insertBefore(dragging, after ? over.nextSibling : over);
+});
+
+/* ---- adding photos from the device */
+
+// Camera file names ("IMG_2041.jpg", "DSC0013.JPG") make poor titles; others are
+// tidied up and used.
+function titleFromName(name) {
+  const base = name.replace(/\.[a-z0-9]+$/i, '');
+  if (/^(img|dsc|dscn|pxl|mvimg|photo|image|screenshot)?[\s_-]*\d+/i.test(base)) return '';
+  return base.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+}
+
+function queueRow(file) {
+  const row = el('li', 'queue__row');
+  const thumb = el('img');
+  thumb.alt = '';
+  thumb.src = URL.createObjectURL(file);
+  thumb.onload = () => URL.revokeObjectURL(thumb.src);
+  const name = el('span', 'queue__name', file.name);
+  const state = el('span', 'queue__state', 'Waiting');
+  row.append(thumb, name, state);
+  photoQueue.appendChild(row);
+  return { row, state };
+}
+
+async function uploadPhoto(file, ui) {
+  ui.row.dataset.state = 'busy';
+  ui.state.textContent = 'Preparing ...';
+  try {
+    const [full, thumb] = await readable(() => Promise.all([
+      resizeToLongEdge(file, 1800, 0.82),
+      makeSquareThumb(file, 700, 0.8)
+    ]));
+    ui.state.textContent = 'Uploading ...';
+    const fd = new FormData();
+    fd.append('full', full, 'full.jpg');
+    fd.append('thumb', thumb, 'thumb.jpg');
+    fd.append('title', titleFromName(file.name));
+    fd.append('category', photoCategory.value);
+    const item = await postForm('/gallery/photos', fd);
+    photos.push(item);
+    renderPhotos();
+    ui.row.dataset.state = 'done';
+    ui.state.textContent = 'Added';
+    setTimeout(() => ui.row.remove(), 2500);
+    return true;
+  } catch (err) {
+    ui.row.dataset.state = 'error';
+    ui.state.textContent = err.message;
+    if (err.unreadable) return false;
+    const retry = el('button', 'icon-btn', 'Retry');
+    retry.type = 'button';
+    retry.addEventListener('click', () => { retry.remove(); uploadPhoto(file, ui); });
+    ui.row.appendChild(retry);
+    return false;
+  }
+}
+
+// One at a time, so a phone does not run out of memory resizing ten photos at once.
+async function addPhotos(fileList) {
+  const files = [...fileList].filter((f) => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
+  if (!files.length) {
+    toast('Those are not image files.', 'error');
+    return;
+  }
+  const jobs = files.map((f) => [f, queueRow(f)]);
+  let added = 0;
+  for (const [file, ui] of jobs) {
+    if (await uploadPhoto(file, ui)) added += 1;
+  }
+  if (added) toast(`${added} photo${added === 1 ? '' : 's'} added to the book.`);
+}
+
+const drop = document.getElementById('photo-drop');
+const photoFiles = document.getElementById('photo-files');
+photoFiles.addEventListener('change', () => {
+  if (photoFiles.files.length) addPhotos(photoFiles.files);
+  photoFiles.value = '';
+});
+['dragenter', 'dragover'].forEach((type) => drop.addEventListener(type, (e) => {
+  if (!e.dataTransfer || ![...e.dataTransfer.types].includes('Files')) return;
+  e.preventDefault();
+  drop.classList.add('is-over');
+}));
+['dragleave', 'drop'].forEach((type) => drop.addEventListener(type, () => drop.classList.remove('is-over')));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) addPhotos(e.dataTransfer.files);
+});
+// A photo dropped anywhere else on the page must not open it in the tab.
+window.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+window.addEventListener('drop', (e) => { if ([...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+
+// Adding a photo by URL (for images already hosted somewhere).
+document.getElementById('add-gallery-url').addEventListener('click', () => {
+  openEditor({
+    title: 'Add a photo by URL',
+    fields: [
+      { name: 'image_url', label: 'Image URL', required: true, hint: 'A link to the full-size image.' },
+      { name: 'thumb_url', label: 'Thumbnail URL (optional)', hint: 'A smaller square version. Leave empty to reuse the image.' },
+      { name: 'category', label: 'Category', type: 'select', options: GALLERY_CATEGORIES, value: photoCategory.value },
+      { name: 'title', label: 'Title (optional)' },
+      { name: 'credit', label: 'Credit (optional)' }
+    ],
+    onSubmit: async (values) => {
+      photos.push(await post('/gallery', values));
+      renderPhotos();
+      toast('Photo added.');
+    }
+  });
+});
+
+/* ----------------------------------------------------- model details */
+
+const modelForm = document.getElementById('model-form');
+
+async function loadModel() {
+  const m = await get('/model');
+  modelForm.elements.cover_line.value = m.cover_line || '';
+  modelForm.elements.based_in.value = m.based_in || '';
+  modelForm.elements.languages.value = m.languages || '';
+  modelForm.elements.instagram.value = m.instagram || '';
+
+  const grid = document.getElementById('m-measurements');
+  grid.innerHTML = '';
+  m.fields.forEach(({ key, label, unit }) => {
+    const wrap = el('div', 'field measure');
+    const lab = el('label', null, label);
+    lab.htmlFor = `m-${key}`;
+    const box = el('div', 'measure__box');
+    const input = el('input');
+    input.type = 'text';
+    input.id = `m-${key}`;
+    input.name = `measure_${key}`;
+    input.value = (m.measurements && m.measurements[key]) || '';
+    box.appendChild(input);
+    if (unit) box.appendChild(el('span', 'measure__unit', unit));
+    wrap.append(lab, box);
+    grid.appendChild(wrap);
   });
 }
 
-document.getElementById('add-gallery').addEventListener('click', () => {
-  openEditor({
-    title: 'Add photo',
-    fields: galleryFields({ sort_order: 99 }),
-    onSubmit: async (values) => {
-      await post('/gallery', values);
-      toast('Photo added.');
-      await loadGallery();
-    }
+modelForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const error = modelForm.querySelector('[data-error]');
+  error.textContent = '';
+  const data = { measurements: {} };
+  new FormData(modelForm).forEach((value, key) => {
+    if (key.startsWith('measure_')) data.measurements[key.slice(8)] = value;
+    else data[key] = value;
   });
+  try {
+    await put('/model', data);
+    await loadModel();
+    toast('Saved. The model book is already showing it.');
+  } catch (err) {
+    error.textContent = err.message;
+  }
 });
 
 /* --------------------------------------------------------- messages */
@@ -884,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await Promise.all([
       loadProfile(), loadProjects(), loadSkills(),
-      loadUpdates(), loadSocials(), loadGallery(), loadMessages(), refreshUnreadBadge()
+      loadUpdates(), loadSocials(), loadGallery(), loadModel(), loadMessages(), refreshUnreadBadge()
     ]);
   } catch (err) {
     toast(err.message, 'error');

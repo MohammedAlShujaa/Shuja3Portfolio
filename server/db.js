@@ -28,6 +28,32 @@ const query = (text, params) => pool.query(text, params);
 const rows = async (text, params) => (await pool.query(text, params)).rows;
 const one = async (text, params) => (await pool.query(text, params)).rows[0] || null;
 
+/* ------------------------------------------------- tables added later */
+
+// Tables added after launch are created the first time they are needed, so a
+// deploy never needs a manual migration step. Runs once per server instance.
+let extraTables = null;
+const ensureExtraTables = () => {
+  if (!extraTables) {
+    extraTables = pool.query(`
+      CREATE TABLE IF NOT EXISTS media (
+        id           SERIAL PRIMARY KEY,
+        content_type TEXT NOT NULL,
+        data         BYTEA NOT NULL,
+        created_at   TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key   TEXT PRIMARY KEY,
+        value JSONB NOT NULL
+      );
+    `).catch((err) => {
+      extraTables = null; // try again on the next call
+      throw err;
+    });
+  }
+  return extraTables;
+};
+
 /* ---------------------------------------------------------------- profile */
 
 const getProfile = () => one('SELECT * FROM profile ORDER BY id LIMIT 1');
@@ -194,6 +220,62 @@ const updateGalleryItem = (id, g) =>
 
 const deleteGalleryItem = (id) => query('DELETE FROM gallery WHERE id = $1', [id]);
 
+// Book order: rewrites sort_order so the photos follow the given list of ids.
+const reorderGallery = (ids) =>
+  query(
+    `UPDATE gallery AS g SET sort_order = v.ord
+     FROM unnest($1::int[]) WITH ORDINALITY AS v(id, ord)
+     WHERE g.id = v.id`,
+    [ids]
+  );
+
+// The cover is the one featured photo: featuring one un-features the rest.
+const setGalleryCover = (id) =>
+  query('UPDATE gallery SET featured = (id = $1)', [id]);
+
+const nextGallerySort = async () => {
+  const row = await one('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM gallery');
+  return row.next;
+};
+
+/* ------------------------------------------------------------- media */
+
+// Uploaded images live in the database, so uploads work on any host (Vercel's
+// filesystem is read only) with no storage service to configure.
+const insertMedia = async (contentType, buffer) => {
+  await ensureExtraTables();
+  const row = await one('INSERT INTO media (content_type, data) VALUES ($1, $2) RETURNING id', [contentType, buffer]);
+  return row.id;
+};
+
+const getMedia = async (id) => {
+  await ensureExtraTables();
+  return one('SELECT content_type, data FROM media WHERE id = $1', [id]);
+};
+
+const deleteMedia = async (id) => {
+  await ensureExtraTables();
+  return query('DELETE FROM media WHERE id = $1', [id]);
+};
+
+/* ---------------------------------------------------------- settings */
+
+const getSetting = async (key) => {
+  await ensureExtraTables();
+  const row = await one('SELECT value FROM site_settings WHERE key = $1', [key]);
+  return row ? row.value : null;
+};
+
+const setSetting = async (key, value) => {
+  await ensureExtraTables();
+  return one(
+    `INSERT INTO site_settings (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+     RETURNING value`,
+    [key, JSON.stringify(value)]
+  );
+};
+
 /* --------------------------------------------------------- rate limiting */
 
 /**
@@ -257,6 +339,14 @@ module.exports = {
   insertGalleryItem,
   updateGalleryItem,
   deleteGalleryItem,
+  reorderGallery,
+  setGalleryCover,
+  nextGallerySort,
+  insertMedia,
+  getMedia,
+  deleteMedia,
+  getSetting,
+  setSetting,
   hitRateLimit,
   getAdminUser
 };

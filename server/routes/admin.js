@@ -6,11 +6,9 @@
  */
 
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const multer = require('multer');
 const db = require('../db');
-const supabase = require('../supabase');
+const model = require('../model');
 const { verifyLogin, requireAuthApi } = require('../auth');
 
 const router = express.Router();
@@ -55,43 +53,36 @@ router.use(requireAuthApi);
 
 /* ---------------------------------------------------------------- upload */
 
-// Vercel's filesystem is read only, so disk uploads only work locally.
-// Pasting an image URL is the supported path in production (see README).
-const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-const onVercel = Boolean(process.env.VERCEL);
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const safe = file.originalname.toLowerCase().replace(/[^a-z0-9.]+/g, '-');
-    cb(null, `${Date.now()}-${safe}`);
-  }
-});
-
-const upload = multer({
-  storage,
+// Images are stored in the database and served at /media/<id> (see app.js), so
+// uploading works the same locally and on Vercel, with nothing else to set up.
+// The browser shrinks photos before sending them, so they stay small and under
+// the serverless request size limit. SVG is not accepted: it can carry script.
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 4 * 1024 * 1024 },
-  // SVG is deliberately excluded: it can carry script, and uploads are served
-  // from the same origin, so an SVG upload would be a stored XSS vector.
   fileFilter: (req, file, cb) => {
     const ok = /^image\/(png|jpeg|jpg|gif|webp)$/.test(file.mimetype);
-    cb(ok ? null : new Error('Only image files are allowed.'), ok);
+    cb(ok ? null : new Error('Only JPG, PNG, GIF or WebP images are allowed.'), ok);
   }
 });
 
-router.post('/upload', (req, res, next) => {
-  if (onVercel) {
-    return res.status(501).json({
-      error: 'File upload is disabled on Vercel because the filesystem is read only. Paste an image URL instead.'
-    });
-  }
-  upload.single('image')(req, res, (err) => {
+const mediaUrl = (id) => `/media/${id}`;
+const mediaIdOf = (url) => {
+  const m = /^\/media\/(\d+)$/.exec(String(url || ''));
+  return m ? Number(m[1]) : null;
+};
+
+// One image (field "image"): the profile photo, a project thumbnail, ...
+router.post('/media', (req, res, next) => {
+  imageUpload.single('image')(req, res, async (err) => {
     if (err) return res.status(400).json({ error: err.message });
-    if (!req.file) return res.status(400).json({ error: 'No file received.' });
-    res.json({ ok: true, url: `/uploads/${req.file.filename}` });
+    if (!req.file) return res.status(400).json({ error: 'No image was received.' });
+    try {
+      const id = await db.insertMedia(req.file.mimetype, req.file.buffer);
+      res.json({ ok: true, url: mediaUrl(id) });
+    } catch (e) {
+      next(e);
+    }
   });
 });
 
@@ -268,11 +259,59 @@ const galleryFrom = (b) => ({
 
 router.get('/gallery', wrap(async (req, res) => res.json(await db.listGallery())));
 
+// Add a photo by URL (the photo manager's upload uses /gallery/photos below).
 router.post('/gallery', wrap(async (req, res) => {
   const g = galleryFrom(req.body);
   if (!g.image_url) return res.status(400).json({ error: 'An image URL is required.' });
   if (!GALLERY_CATEGORIES.includes(g.category)) return res.status(400).json({ error: 'Pick a valid category.' });
+  if (!req.body.sort_order) g.sort_order = await db.nextGallerySort();
   res.status(201).json(await db.insertGalleryItem(g));
+}));
+
+// Upload a photo from the device: the browser sends a large version ("full")
+// and a square thumbnail ("thumb"); both are stored, and the photo is added at
+// the end of the book.
+router.post('/gallery/photos', (req, res, next) => {
+  imageUpload.fields([{ name: 'full', maxCount: 1 }, { name: 'thumb', maxCount: 1 }])(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    try {
+      const full = req.files && req.files.full && req.files.full[0];
+      if (!full) return res.status(400).json({ error: 'No image was received.' });
+      const thumb = req.files.thumb && req.files.thumb[0];
+      const category = GALLERY_CATEGORIES.includes(req.body.category) ? req.body.category : 'Studio';
+
+      const fullId = await db.insertMedia(full.mimetype, full.buffer);
+      const thumbId = thumb ? await db.insertMedia(thumb.mimetype, thumb.buffer) : null;
+      const item = await db.insertGalleryItem({
+        title: String(req.body.title || '').trim().slice(0, 120),
+        category,
+        image_url: mediaUrl(fullId),
+        thumb_url: thumbId ? mediaUrl(thumbId) : '',
+        credit: '',
+        featured: false,
+        sort_order: await db.nextGallerySort()
+      });
+      res.status(201).json(item);
+    } catch (e) {
+      next(e);
+    }
+  });
+});
+
+// The book order, as a list of photo ids from first to last.
+router.put('/gallery/order', wrap(async (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids.map((v) => toInt(v, NaN)).filter(Number.isFinite) : [];
+  if (!ids.length) return res.status(400).json({ error: 'No order was received.' });
+  await db.reorderGallery(ids);
+  res.json({ ok: true });
+}));
+
+// Makes this photo the cover (the only featured one).
+router.put('/gallery/:id/cover', wrap(async (req, res) => {
+  const id = toInt(req.params.id);
+  if (!(await db.getGalleryItem(id))) return res.status(404).json({ error: 'Gallery item not found.' });
+  await db.setGalleryCover(id);
+  res.json({ ok: true });
 }));
 
 router.put('/gallery/:id', wrap(async (req, res) => {
@@ -284,48 +323,30 @@ router.put('/gallery/:id', wrap(async (req, res) => {
   res.json(updated);
 }));
 
+// Deleting a photo also deletes its uploaded images.
 router.delete('/gallery/:id', wrap(async (req, res) => {
-  await db.deleteGalleryItem(toInt(req.params.id));
+  const id = toInt(req.params.id);
+  const item = await db.getGalleryItem(id);
+  await db.deleteGalleryItem(id);
+  if (item) {
+    for (const url of [item.image_url, item.thumb_url]) {
+      const mediaId = mediaIdOf(url);
+      if (mediaId) await db.deleteMedia(mediaId);
+    }
+  }
   res.json({ ok: true });
 }));
 
-// Receives the already-resized full and thumbnail images from the browser and
-// forwards them to Supabase Storage. The browser shrinks the photo first, so the
-// payload stays small and works within the serverless request size limit, and
-// the huge original never has to travel over the network.
-const memUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const ok = /^image\/(png|jpeg|jpg|webp)$/.test(file.mimetype);
-    cb(ok ? null : new Error('Only image files are allowed.'), ok);
-  }
-});
+/* ----------------------------------------------------------- model */
 
-router.post('/gallery/upload', (req, res) => {
-  if (!supabase.isConfigured()) {
-    return res.status(501).json({
-      error: 'Supabase storage is not set up. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, then create a public bucket named "photos".'
-    });
-  }
-  memUpload.fields([{ name: 'full', maxCount: 1 }, { name: 'thumb', maxCount: 1 }])(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message });
-    try {
-      const full = req.files && req.files.full && req.files.full[0];
-      if (!full) return res.status(400).json({ error: 'No image was received.' });
-      const thumb = req.files && req.files.thumb && req.files.thumb[0];
-      const name = String(req.body.name || 'photo');
+// The model book's cover line, comp card and measurements (see server/model.js).
+router.get('/model', wrap(async (req, res) => {
+  res.json({ ...(await model.getModel()), fields: model.MEASUREMENTS });
+}));
 
-      const image_url = await supabase.uploadImage(full.buffer, full.mimetype, name);
-      let thumb_url = '';
-      if (thumb) thumb_url = await supabase.uploadImage(thumb.buffer, thumb.mimetype, `${name}-thumb`);
-
-      res.json({ ok: true, image_url, thumb_url });
-    } catch (e) {
-      res.status(502).json({ error: e.message });
-    }
-  });
-});
+router.put('/model', wrap(async (req, res) => {
+  res.json(await model.saveModel(req.body));
+}));
 
 /* -------------------------------------------------------------- messages */
 
