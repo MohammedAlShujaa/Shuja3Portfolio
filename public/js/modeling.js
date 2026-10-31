@@ -3,7 +3,8 @@
    Loads the photos from /api/gallery and builds the page from them:
    - the cover: the first featured photo between the two lines of the name;
    - the comp card's "Available for", from the categories actually used;
-   - the book: every look, large and numbered. On wide screens, scrolling down
+   - the book: the first BOOK_SIZE looks (the admin's order), large and
+     numbered, with a link to the index when there are more. On wide screens, scrolling down
      pins the section and turns its pages sideways, each photo drifting a
      little inside its frame; on phones, and for reduced motion, it is a row
      to swipe;
@@ -15,6 +16,7 @@
    scrolling, both driven by GSAP's ticker so the pinned book stays in step. */
 
 const CATEGORIES = ['All', 'Studio', 'Brand & Product', 'Casting', 'Editorial'];
+const BOOK_SIZE = 7;     // looks in the book; every photo is still in the index
 
 let items = [];          // every photo from the database, in book order
 let shown = [];          // the index's current filtered subset
@@ -81,9 +83,17 @@ function renderBook() {
     track.appendChild(make('li', 'mb-empty', 'Photos coming soon.'));
     return;
   }
-  $('[data-count]').textContent = `${pad(items.length)} looks`;
+  const book = items.slice(0, BOOK_SIZE);
+  const count = $('[data-count]');
+  count.textContent = `${pad(book.length)} looks`;
+  if (items.length > book.length) {
+    count.append(', ');
+    const all = make('a', null, `all ${items.length} in the index`);
+    all.href = '#index';
+    count.appendChild(all);
+  }
 
-  items.forEach((item, i) => {
+  book.forEach((item, i) => {
     const li = make('li', 'mb-look');
     const title = item.title || `Look ${pad(i + 1)}`;
 
@@ -95,12 +105,12 @@ function renderBook() {
     img.alt = title;
     img.decoding = 'async';
     frame.appendChild(img);
-    frame.addEventListener('click', () => openViewer(items, i));
+    frame.addEventListener('click', () => openViewer(book, i));
     li.appendChild(frame);
 
     const cap = make('div', 'mb-look__caption');
     const no = make('span', 'mb-look__no', pad(i + 1));
-    no.appendChild(make('small', null, ` / ${pad(items.length)}`));
+    no.appendChild(make('small', null, ` / ${pad(book.length)}`));
     cap.appendChild(no);
     const text = make('div');
     text.appendChild(make('div', 'mb-look__title', title));
