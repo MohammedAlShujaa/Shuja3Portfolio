@@ -273,6 +273,8 @@ a { color: inherit; text-decoration: none; }
   padding: 0 var(--gutter) 36px;
 }
 .mb-book__count { margin: 0 0 6px; color: var(--dim); }
+.mb-book__count a { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
+.mb-book__count a:hover { color: var(--red-text); }
 
 /* Without the scroll-driven pages (phones, reduced motion, no script) the
    book is a row to swipe, snapping to each look. */
