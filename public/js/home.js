@@ -21,7 +21,15 @@ async function renderHero() {
   const profile = await api('/api/profile');
   if (!profile) return;
 
-  document.querySelector('[data-hero-name]').textContent = profile.headline;
+  // The last word (the surname) shows in crimson.
+  const nameNode = document.querySelector('[data-hero-name]');
+  const words = String(profile.headline || '').trim().split(' ');
+  const last = words.length > 1 ? words.pop() : null;
+  nameNode.textContent = words.join(' ');
+  if (last) {
+    nameNode.appendChild(document.createTextNode(' '));
+    nameNode.appendChild(el('span', 'hero__name-accent', last));
+  }
   renderSubheading(document.querySelector('[data-hero-subheading]'), profile.subheading);
   document.querySelector('[data-hero-intro]').textContent = profile.intro;
 
