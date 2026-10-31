@@ -270,7 +270,22 @@ function initMotion(coverFig) {
       });
     });
 
+    // Keyboard: tabbing to a look that is off screen turns the book to it.
+    // The track moves 1px for every 1px scrolled, so scroll by its offset.
+    const onFocus = (e) => {
+      const look = e.target.closest('.mb-look');
+      if (!look) return;
+      const r = look.getBoundingClientRect();
+      const gutter = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+      if (r.left >= 0 && r.right <= window.innerWidth) return;
+      const y = window.scrollY + (r.left - gutter);
+      if (lenis) lenis.scrollTo(y, { immediate: true });
+      else window.scrollTo(0, y);
+    };
+    track.addEventListener('focusin', onFocus);
+
     return () => {
+      track.removeEventListener('focusin', onFocus);
       book.classList.remove('is-pinned');
       bar.style.transform = '';
     };
