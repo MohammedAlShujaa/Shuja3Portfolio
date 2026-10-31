@@ -53,11 +53,14 @@
       <figure class="mb-cover__photo" data-cover hidden>
         <img src="" alt="" fetchpriority="high">
       </figure>
-      <p class="mb-cover__note">Menswear model, 184 cm</p>
+      <p class="mb-cover__note"><!--model:note-->Menswear model, 184 cm<!--/model:note--></p>
     </section>
 
     <!-- Comp card: the facts a brand or agency asks for first. -->
     <section class="mb-card" aria-label="Details">
+      <!-- Filled in by the server from Modeling, Model details in the admin panel
+           (server/render.js). What is here is the default. -->
+      <!--model:card-->
       <dl class="mb-card__list">
         <div>
           <dt>Based in</dt>
@@ -76,7 +79,6 @@
           <dd><a href="https://www.instagram.com/shuj0a/" target="_blank" rel="noopener noreferrer">@shuj0a</a></dd>
         </div>
       </dl>
-      <!-- Measurements, as on an agency comp card (cm, kg, EU shoe sizes). -->
       <dl class="mb-stats" aria-label="Measurements">
         <div><dt>Height</dt><dd>184<small>cm</small></dd></div>
         <div><dt>Weight</dt><dd>65<small>kg</small></dd></div>
@@ -89,6 +91,7 @@
         <div><dt>Eyes</dt><dd>Brown</dd></div>
         <div><dt>Hair</dt><dd>Dark brown</dd></div>
       </dl>
+      <!--/model:card-->
     </section>
 
     <!-- The book: every look, large and numbered. Scrolling down turns the pages
@@ -120,7 +123,7 @@
       <p class="mb-booking__kicker">Brands, agencies, photographers</p>
       <h2 class="mb-booking__title" id="mb-booking-title">For bookings</h2>
       <div class="mb-booking__links">
-        <a class="mb-btn mb-btn--solid" href="https://www.instagram.com/shuj0a/" target="_blank" rel="noopener noreferrer">Message on Instagram</a>
+        <!--model:instagram--><a class="mb-btn mb-btn--solid" href="https://www.instagram.com/shuj0a/" target="_blank" rel="noopener noreferrer">Message on Instagram</a><!--/model:instagram-->
         <a class="mb-btn" href="/contact" data-email>Send an email</a>
       </div>
     </section>
