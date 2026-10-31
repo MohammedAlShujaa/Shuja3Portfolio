@@ -463,8 +463,8 @@ p { margin: 0 0 var(--s2); }
 .hero__socials li:first-child a { padding-left: 0; }
 .hero__socials a:hover { color: var(--red-text); text-decoration: none; }
 
-/* The portrait: chrome-silver monochrome inside a thin crimson orbit that
-   turns slowly, with a red glow rising behind it. */
+/* The portrait, inside a thin crimson orbit that turns slowly, with a red
+   glow rising behind it. */
 .hero__photo-wrap {
   position: relative;
   display: grid;
@@ -506,7 +506,6 @@ p { margin: 0 0 var(--s2); }
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--line);
-  filter: grayscale(1) contrast(1.12) brightness(0.92);
   background: var(--surface);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 10px rgba(8, 8, 8, 0.6);
 }
@@ -906,7 +905,6 @@ p { margin: 0 0 var(--s2); }
   aspect-ratio: 4 / 5;
   object-fit: cover;
   background: var(--surface);
-  filter: grayscale(1) contrast(1.1) brightness(0.95);
 }
 
 .info-card {
