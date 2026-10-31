@@ -44,15 +44,21 @@
   <main>
 
     <!-- Cover: the name across the full width, the cover photo in front of it,
-         between its two lines. -->
+         between its two lines. A second copy of the name, drawn in outline and
+         clipped to the photo, carries the letters across it. -->
     <section class="mb-cover" aria-labelledby="mb-name">
       <h1 class="mb-name" id="mb-name">
         <span class="mb-name__line mb-name__line--first">Mohammed</span>
         <span class="mb-name__line mb-name__line--last">Al-Shujaa</span>
       </h1>
       <figure class="mb-cover__photo" data-cover hidden>
-        <img src="" alt="" fetchpriority="high">
+        <div class="mb-cover__frame"><img src="" alt="" fetchpriority="high"></div>
+        <figcaption class="mb-cover__plate" data-plate></figcaption>
       </figure>
+      <div class="mb-name mb-name--ghost" aria-hidden="true">
+        <span class="mb-name__line mb-name__line--first">Mohammed</span>
+        <span class="mb-name__line mb-name__line--last">Al-Shujaa</span>
+      </div>
       <p class="mb-cover__note"><!--model:note-->Menswear model, 184 cm<!--/model:note--></p>
     </section>
 

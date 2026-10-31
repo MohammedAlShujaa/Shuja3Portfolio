@@ -55,6 +55,14 @@ function renderCover() {
   const img = fig.querySelector('img');
   img.src = cover.image_url;
   img.alt = cover.title ? `${cover.title}, Mohammed Al-Shujaa` : 'Mohammed Al-Shujaa';
+
+  // The label under it: "01 / Cover / Brand & Product", with the credit if any.
+  const plate = $('[data-plate]');
+  plate.innerHTML = '';
+  plate.appendChild(make('b', null, pad(items.indexOf(cover) + 1)));
+  [cover.title || 'Cover', cover.category, cover.credit].filter(Boolean)
+    .forEach((t) => plate.appendChild(make('span', null, t)));
+
   fig.hidden = false;
   return fig;
 }
@@ -234,9 +242,13 @@ function initMotion(coverFig) {
     // Cover: the name rises into place and the photo uncovers upward.
     const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
     tl.from('.mb-name__line', { yPercent: 40, autoAlpha: 0, duration: 1.3, stagger: 0.12 }, 0);
+    // (The class selectors catch both copies of the name, solid and outline.)
     if (coverFig) {
-      tl.fromTo(coverFig, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4 }, 0.2);
-      tl.from(coverFig.querySelector('img'), { scale: 1.25, duration: 1.8 }, 0.2);
+      const frame = coverFig.querySelector('.mb-cover__frame');
+      tl.fromTo(frame, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4 }, 0.2);
+      tl.from(frame.querySelector('img'), { scale: 1.25, duration: 1.8 }, 0.2);
+      tl.from('.mb-name--ghost', { autoAlpha: 0, duration: 0.9, ease: 'power2.out' }, 1.0);
+      tl.from('.mb-cover__plate', { autoAlpha: 0, duration: 0.8 }, 1.1);
     }
     tl.from('.mb-cover__note', { autoAlpha: 0, duration: 0.8 }, 0.8);
 
@@ -245,7 +257,34 @@ function initMotion(coverFig) {
     const away = { trigger: '.mb-cover', start: 'top top', end: 'bottom top', scrub: true };
     gsap.to('.mb-name__line--first', { xPercent: -8, ease: 'none', scrollTrigger: away });
     gsap.to('.mb-name__line--last', { xPercent: 8, ease: 'none', scrollTrigger: away });
-    if (coverFig) gsap.to(coverFig.querySelector('img'), { yPercent: 10, ease: 'none', scrollTrigger: away });
+    if (coverFig) gsap.to(coverFig.querySelector('img'), { yPercent: 4.5, ease: 'none', scrollTrigger: away });
+  });
+
+  // With a mouse, the photo and the name drift a little in opposite
+  // directions as the pointer moves, so the cover reads in depth. The photo
+  // moves through --mx/--my, which its outline-name clip follows too.
+  mm.add('(prefers-reduced-motion: no-preference) and (pointer: fine)', () => {
+    const cover = $('.mb-cover');
+    const photoX = gsap.quickTo(cover, '--mx', { duration: 0.9, ease: 'power3.out' });
+    const photoY = gsap.quickTo(cover, '--my', { duration: 0.9, ease: 'power3.out' });
+    const firstX = gsap.quickTo('.mb-name__line--first', 'x', { duration: 1.2, ease: 'power3.out' });
+    const lastX = gsap.quickTo('.mb-name__line--last', 'x', { duration: 1.2, ease: 'power3.out' });
+    const onMove = (e) => {
+      const nx = e.clientX / window.innerWidth - 0.5;
+      const ny = e.clientY / window.innerHeight - 0.5;
+      photoX(nx * 24);
+      photoY(ny * 18);
+      firstX(nx * -18);
+      lastX(nx * -12);
+    };
+    const onLeave = () => { photoX(0); photoY(0); firstX(0); lastX(0); };
+    cover.addEventListener('pointermove', onMove);
+    cover.addEventListener('pointerleave', onLeave);
+    return () => {
+      cover.removeEventListener('pointermove', onMove);
+      cover.removeEventListener('pointerleave', onLeave);
+      gsap.set(cover, { '--mx': 0, '--my': 0 });
+    };
   });
 
   // The book turns its pages sideways while you scroll down (wide screens).
