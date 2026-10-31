@@ -163,7 +163,7 @@ Everything under `/admin`, and every POST, PUT, and DELETE route, requires a ses
 - **Skills**: add, edit, delete, and reorder within the four groups.
 - **Updates**: the feed shown on the About page.
 - **Social links**: shown in the hero, footer, and contact page.
-- **Modeling, Photos**: the model book's photos as a grid in book order. Drop or pick many photos at once from your phone or computer; each is resized in the browser and added to the end of the book. Edit title, category and credit in place (saved as you type), star the cover, drag (or use the arrows) to reorder, and delete.
+- **Modeling, Photos**: the model book's photos as a grid in book order. The first 7 are the book; every photo appears in the index. Drop or pick many photos at once from your phone or computer; each is resized in the browser and added to the end of the book. Edit title, category and credit in place (saved as you type), star the cover, drag (or use the arrows) to reorder, and delete.
 - **Modeling, Model details**: the cover line, comp card (based in, languages, Instagram) and measurements shown on `/modeling`. Leave a field empty to hide it.
 - **Messages**: contact form submissions, with mark read/unread, delete, and an unread badge.
 
