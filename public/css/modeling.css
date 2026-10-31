@@ -125,6 +125,13 @@ a { color: inherit; text-decoration: none; }
 .mb-intro .mb-cover__photo { visibility: hidden; }
 
 .mb-cover {
+  /* The cover photo's width and the height of its centre, shared by the photo
+     and by the outline name's clip. --mx and --my are the pointer parallax, in
+     px, set by modeling.js. */
+  --photo-w: min(clamp(220px, 27vw, 520px), 47vh);
+  --photo-top: 52%;
+  --mx: 0;
+  --my: 0;
   position: relative;
   isolation: isolate;
   min-height: 100vh;
@@ -156,19 +163,89 @@ a { color: inherit; text-decoration: none; }
 .mb-name__line--first { align-self: flex-start; }
 .mb-name__line--last { align-self: flex-end; }
 
+/* The same name, laid out in the same box, drawn as an outline in front of
+   the photo and clipped to it: the letters run on across the picture. */
+.mb-name--ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: inherit;
+  color: transparent;
+  -webkit-text-stroke: clamp(1px, 0.09vw, 1.6px) var(--text);
+  pointer-events: none;
+  clip-path: inset(
+    calc(var(--photo-top) - var(--photo-w) * 2 / 3 + var(--my) * 1px)
+    calc(50% - var(--photo-w) / 2 - var(--mx) * 1px)
+    calc(100% - var(--photo-top) - var(--photo-w) * 2 / 3 - var(--my) * 1px)
+    calc(50% - var(--photo-w) / 2 + var(--mx) * 1px)
+  );
+}
+.mb-name--ghost .mb-name__line { z-index: auto; }
+
 .mb-cover__photo {
   position: absolute;
   z-index: 2;
-  left: 50%;
-  top: 52%;
-  width: clamp(220px, 27vw, 430px);
+  left: calc(50% - var(--photo-w) / 2);
+  top: calc(var(--photo-top) - var(--photo-w) * 2 / 3);
+  width: var(--photo-w);
   aspect-ratio: 3 / 4;
   margin: 0;
-  transform: translate(-50%, -50%);
+  transform: translate(calc(var(--mx) * 1px), calc(var(--my) * 1px));
+}
+.mb-cover__frame {
+  position: relative;
+  height: 100%;
   overflow: hidden;
   background: var(--surface);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
 }
-.mb-cover__photo img { width: 100%; height: 100%; object-fit: cover; }
+/* A little taller than the frame, so it can drift while the page scrolls. */
+.mb-cover__frame img {
+  position: absolute;
+  left: 0;
+  top: -5%;
+  width: 100%;
+  height: 110%;
+  object-fit: cover;
+}
+
+/* Crop marks on two corners, like a proof on a light table. */
+.mb-cover__photo::before,
+.mb-cover__photo::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 0 solid var(--red);
+  pointer-events: none;
+}
+.mb-cover__photo::before { top: -10px; left: -10px; border-top-width: 2px; border-left-width: 2px; }
+.mb-cover__photo::after { bottom: -10px; right: -10px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* The label beside the cover, reading upward: its number in the book, and
+   what it is. On phones it sits under the photo instead. */
+.mb-cover__plate {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 14px);
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--dim);
+}
+.mb-cover__plate:empty { display: none; }
+.mb-cover__plate b { color: var(--red-text); font-weight: 700; }
+.mb-cover__plate span + span::before { content: '/'; margin-inline-end: 12px; color: var(--line); }
 
 .mb-cover__note {
   position: absolute;
@@ -192,7 +269,8 @@ a { color: inherit; text-decoration: none; }
   .mb-bar { grid-template-columns: 1fr auto; }
   .mb-cover { padding-top: 84px; }
   .mb-name { font-size: 19vw; }
-  .mb-cover__photo { width: 74vw; top: 50%; }
+  .mb-cover { --photo-w: 74vw; --photo-top: 50%; }
+  .mb-cover__plate { top: calc(100% + 14px); right: 0; transform: none; writing-mode: horizontal-tb; }
   .mb-cover__note { bottom: 18px; }
 }
 
