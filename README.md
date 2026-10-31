@@ -2,7 +2,7 @@
 
 Personal portfolio for **Mohammed Al-Shujaa**, final-year Information Engineering student at UNTAG Surabaya, with a database-driven admin panel for keeping the content current without editing code or redeploying.
 
-Built on the "Neural Navy" design system: a dark navy palette, Space Grotesk and Inter and JetBrains Mono, and a faint t-SNE constellation in the hero that echoes the TripAdvisor NLP project.
+Built on the "Obsidian & Crimson" design system: three colours, Obsidian Black `#080808`, Chrome Silver `#CDCBCA` and Laser Crimson Red `#D41514` (with a brighter `#F23A3B` for small red text, so it stays readable); extra-wide uppercase Archivo headlines, Inter for body text and JetBrains Mono for small labels; and a field of data points behind the homepage that echoes the t-SNE plot from the TripAdvisor NLP project.
 
 ## Tech stack
 
@@ -27,7 +27,7 @@ public/              static site served by Vercel (or by Express locally)
   portfolio.html     Portfolio
   contact.html       Contact
   modeling.html      standalone modeling gallery (css/modeling.css, js/modeling.js)
-  css/style.css      the Neural Navy design system
+  css/style.css      the Obsidian & Crimson design system
   js/                main.js (shared) + one script per page; data-field.js, hero-motion.js and scroll-story.js are the homepage motion
   vendor/gsap/<ver>/ GSAP files served from this site (npm run vendor:gsap)
   vendor/lenis/<ver>/ Lenis smooth-scroll files served from this site (npm run vendor:lenis)
@@ -205,7 +205,7 @@ Skills are shown as grouped icon rows with names, never as percentage bars or st
 
 ## Notes and TODO
 
-- **Replace the remaining placeholder artwork in `public/img/`.** Most project thumbnails are still on-theme SVG stand-ins (StudyHub already has a real screenshot). Swap in real exports: the t-SNE cluster plot, the predicted vs actual scatter, a TIMS optimization window, and the IT Inventory dashboard. Export plots on a dark background so they glow on `#0B1121`. You can change all of these from the admin panel without touching code.
+- **Replace the remaining placeholder artwork in `public/img/`.** Most project thumbnails are still on-theme SVG stand-ins (StudyHub already has a real screenshot). Swap in real exports: the t-SNE cluster plot, the predicted vs actual scatter, a TIMS optimization window, and the IT Inventory dashboard. Export plots on a black background (`#080808`) in silver, white and crimson so they sit in the palette. You can change all of these from the admin panel without touching code.
 - **A live demo is the biggest credibility win available.** Wrap the House Price model in Streamlit or Gradio, deploy free on Hugging Face Spaces, and paste the URL into that project's "Live demo URL" field in the admin.
 - Cards with no link show "Private work, available on request" rather than a dead `#` link. If you host the TIMS thesis or journal PDF, add it as the project's live URL.
 - Devicon supplies the skill icons via CDN. Tools without a Devicon glyph (NLTK, n8n, SQL, Excel, Power BI) fall back to an initials tile automatically.
