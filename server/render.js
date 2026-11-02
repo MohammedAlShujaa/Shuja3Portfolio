@@ -287,14 +287,78 @@ function modelCardHtml(model, gallery) {
     (stats ? `<dl class="mb-stats" aria-label="Measurements">${stats}</dl>` : '');
 }
 
-function injectModeling(html, { model, gallery }) {
-  if (!model) return html;
-  html = block(html, 'note', esc(model.cover_line));
-  html = block(html, 'card', modelCardHtml(model, gallery));
-  html = block(html, 'instagram', model.instagram
-    ? `<a class="mb-btn mb-btn--solid" href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">Message on Instagram</a>`
-    : '');
-  return html;
+// The photos, rendered the same way modeling.js renders them, so crawlers and
+// link previews see the book without running the page's script. The script
+// then rebuilds them from the JSON embedded below and adds the interaction.
+const BOOK_SIZE = 7; // keep in step with BOOK_SIZE in public/js/modeling.js
+const pad2 = (n) => String(n).padStart(2, '0');
+
+function coverHtml(gallery) {
+  const cover = gallery.find((g) => g.featured) || gallery[0];
+  if (!cover) return null;
+  const alt = cover.title ? `${cover.title}, Mohammed Al-Shujaa` : 'Mohammed Al-Shujaa';
+  const plate = [cover.title || 'Cover', cover.category, cover.credit].filter(Boolean)
+    .map((t) => `<span>${esc(t)}</span>`).join('');
+  return `<figure class="mb-cover__photo" data-cover>
+        <div class="mb-cover__frame"><img src="${esc(cover.image_url)}" alt="${esc(alt)}" fetchpriority="high"></div>
+        <figcaption class="mb-cover__plate" data-plate><b>${pad2(gallery.indexOf(cover) + 1)}</b>${plate}</figcaption>
+      </figure>`;
+}
+
+function bookHtml(gallery) {
+  if (!gallery.length) return '<li class="mb-empty">Photos coming soon.</li>';
+  const book = gallery.slice(0, BOOK_SIZE);
+  return book.map((item, i) => {
+    const title = item.title || `Look ${pad2(i + 1)}`;
+    const meta = item.credit ? `${item.category}, ${item.credit}` : item.category;
+    return `<li class="mb-look"><button class="mb-look__frame" type="button" aria-label="Open look ${pad2(i + 1)}, ${esc(title)}, full screen">` +
+      `<img src="${esc(item.image_url)}" alt="${esc(title)}" decoding="async"></button>` +
+      `<div class="mb-look__caption"><span class="mb-look__no">${pad2(i + 1)}<small> / ${pad2(book.length)}</small></span>` +
+      `<div><div class="mb-look__title">${esc(title)}</div><div class="mb-look__meta">${esc(meta)}</div></div></div></li>`;
+  }).join('');
+}
+
+function bookCountHtml(gallery) {
+  if (!gallery.length) return '';
+  const shown = Math.min(gallery.length, BOOK_SIZE);
+  const more = gallery.length > shown ? `, <a href="#index">all ${gallery.length} in the index</a>` : '';
+  return `${pad2(shown)} looks${more}`;
+}
+
+function sheetHtml(gallery) {
+  if (!gallery.length) return '<p class="mb-empty">Photos coming soon.</p>';
+  return gallery.map((item, i) =>
+    `<button class="mb-sheet__item" type="button" aria-label="Open look ${pad2(i + 1)}, ${esc(item.title || item.category)}, full screen">` +
+    `<div class="mb-sheet__img"><img src="${esc(item.thumb_url || item.image_url)}" alt="" loading="lazy"></div>` +
+    `<div class="mb-sheet__no"><b>${pad2(i + 1)}</b><span>${esc(item.category)}</span></div></button>`
+  ).join('');
+}
+
+// JSON inside a <script> tag: "<" is escaped so no value can close the tag.
+const jsonForScript = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+
+function injectModeling(html, { model, gallery = [], socials = [] }) {
+  if (model) {
+    html = block(html, 'note', esc(model.cover_line));
+    html = block(html, 'card', modelCardHtml(model, gallery));
+    html = block(html, 'instagram', model.instagram
+      ? `<a class="mb-btn mb-btn--solid" href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">Message on Instagram</a>`
+      : '');
+  }
+
+  const cover = coverHtml(gallery);
+  if (cover) html = block(html, 'cover', cover);
+  html = block(html, 'count', bookCountHtml(gallery));
+  html = block(html, 'book', bookHtml(gallery));
+  html = block(html, 'sheet', sheetHtml(gallery));
+
+  const email = socials.find((s) => /^mailto:/i.test(s.url || ''));
+  if (email) html = block(html, 'email', `<a class="mb-btn" href="${esc(email.url)}" data-email>Send an email</a>`);
+
+  const photos = gallery.map(({ id, title, category, credit, image_url, thumb_url, featured }) =>
+    ({ id, title, category, credit, image_url, thumb_url, featured }));
+  return block(html, 'data',
+    `<script type="application/json" id="mb-data">${jsonForScript({ gallery: photos, email: email ? email.url : null })}</script>`);
 }
 
 /* ------------------------------------------------------- public API */
@@ -305,7 +369,7 @@ const NEEDS = {
   portfolio: ['projects', 'socials'],
   about: ['profile', 'skills', 'updates', 'socials'],
   contact: ['profile', 'socials'],
-  modeling: ['model', 'gallery']
+  modeling: ['model', 'gallery', 'socials']
 };
 
 const INJECTORS = {
