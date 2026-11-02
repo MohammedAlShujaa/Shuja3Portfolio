@@ -1008,6 +1008,9 @@ async function loadModel() {
   modelForm.elements.based_in.value = m.based_in || '';
   modelForm.elements.languages.value = m.languages || '';
   modelForm.elements.instagram.value = m.instagram || '';
+  ['cover_line', 'languages', 'eyes', 'hair'].forEach((key) => {
+    modelForm.elements[`id_${key}`].value = (m.id && m.id[key]) || '';
+  });
 
   const grid = document.getElementById('m-measurements');
   grid.innerHTML = '';
@@ -1032,15 +1035,16 @@ modelForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const error = modelForm.querySelector('[data-error]');
   error.textContent = '';
-  const data = { measurements: {} };
+  const data = { measurements: {}, id: {} };
   new FormData(modelForm).forEach((value, key) => {
     if (key.startsWith('measure_')) data.measurements[key.slice(8)] = value;
+    else if (key.startsWith('id_')) data.id[key.slice(3)] = value;
     else data[key] = value;
   });
   try {
     await put('/model', data);
     await loadModel();
-    toast('Saved. The model book is already showing it.');
+    toast('Saved. Both model books (English and Indonesian) are already showing it.');
   } catch (err) {
     error.textContent = err.message;
   }
