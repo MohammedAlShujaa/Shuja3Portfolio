@@ -122,7 +122,8 @@ async function collect(names) {
 }
 
 const PAGE_FILE = {
-  index: 'home.html', about: 'about.html', portfolio: 'portfolio.html', contact: 'contact.html', modeling: 'modeling.html'
+  index: 'home.html', about: 'about.html', portfolio: 'portfolio.html', contact: 'contact.html', modeling: 'modeling.html',
+  'modeling-id': 'modeling.html'
 };
 
 const ssrRoute = (name) => async (req, res, next) => {
@@ -141,6 +142,8 @@ app.get('/about', ssrRoute('about'));
 app.get('/portfolio', ssrRoute('portfolio'));
 app.get('/contact', ssrRoute('contact'));
 app.get('/modeling', ssrRoute('modeling'));
+// The model book in Indonesian, for people searching in Indonesian (render.js).
+app.get('/id/modeling', ssrRoute('modeling-id'));
 
 // Images uploaded in the admin panel, stored in the database (see db.js). An id
 // is never reused for different content, so they can be cached for a year.

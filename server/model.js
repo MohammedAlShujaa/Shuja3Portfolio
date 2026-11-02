@@ -5,6 +5,10 @@
  * measurements. Edited in the admin panel (Modeling, Model details), saved in
  * site_settings under the key "model", and rendered into /modeling by
  * render.js. Until something is saved, the defaults below are shown.
+ *
+ * The Indonesian page (/id/modeling) uses the same details, except for the
+ * few values written in words, which have their own Indonesian text under
+ * "id". An empty one falls back to the English value.
  */
 
 const db = require('./db');
@@ -39,8 +43,17 @@ const DEFAULT_MODEL = {
     shoes: '43-44',
     eyes: 'Brown',
     hair: 'Dark brown'
+  },
+  id: {
+    cover_line: 'Model pria, 184 cm',
+    languages: 'Arab, Inggris, Indonesia',
+    eyes: 'Cokelat',
+    hair: 'Cokelat tua'
   }
 };
+
+// The values that have an Indonesian version (see "id" above).
+const ID_FIELDS = ['cover_line', 'languages', 'eyes', 'hair'];
 
 const clean = (v, max = 120) => String(v === null || v === undefined ? '' : v).trim().slice(0, max);
 
@@ -58,12 +71,34 @@ function fromInput(body) {
   const m = b.measurements || {};
   const measurements = {};
   MEASUREMENTS.forEach(({ key }) => { measurements[key] = clean(m[key], 40); });
+  const idIn = b.id || {};
+  const id = {};
+  ID_FIELDS.forEach((key) => { id[key] = clean(idIn[key]); });
   return {
     cover_line: clean(b.cover_line),
     based_in: clean(b.based_in),
     languages: clean(b.languages),
     instagram: cleanHandle(b.instagram),
-    measurements
+    measurements,
+    id
+  };
+}
+
+// The details as the Indonesian page shows them: the Indonesian text where
+// there is one, the English value where it is empty. A value hidden on the
+// English page (left empty) stays hidden here too.
+function inIndonesian(model) {
+  const id = model.id || {};
+  const pick = (key, english) => (english ? id[key] || english : '');
+  return {
+    ...model,
+    cover_line: pick('cover_line', model.cover_line),
+    languages: pick('languages', model.languages),
+    measurements: {
+      ...model.measurements,
+      eyes: pick('eyes', model.measurements.eyes),
+      hair: pick('hair', model.measurements.hair)
+    }
   };
 }
 
@@ -74,7 +109,8 @@ async function getModel() {
   return {
     ...DEFAULT_MODEL,
     ...saved,
-    measurements: { ...DEFAULT_MODEL.measurements, ...(saved.measurements || {}) }
+    measurements: { ...DEFAULT_MODEL.measurements, ...(saved.measurements || {}) },
+    id: { ...DEFAULT_MODEL.id, ...(saved.id || {}) }
   };
 }
 
@@ -84,4 +120,4 @@ async function saveModel(body) {
   return value;
 }
 
-module.exports = { MEASUREMENTS, DEFAULT_MODEL, getModel, saveModel };
+module.exports = { MEASUREMENTS, DEFAULT_MODEL, ID_FIELDS, getModel, saveModel, inIndonesian };
