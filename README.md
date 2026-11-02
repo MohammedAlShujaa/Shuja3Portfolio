@@ -16,7 +16,7 @@ Built on the "Obsidian & Crimson" design system: three colours, Obsidian Black `
 
 The four main pages are rendered on the server with their content filled in from the database (`server/render.js`), so crawlers and link previews see real text. The browser scripts then refresh the same content from JSON routes under `/api`. Anything saved in the admin panel appears on the live site immediately.
 
-A fifth page, `/modeling`, is a standalone photo gallery with its own dark theme. It is not in the main navigation and loads its photos from `/api/gallery`.
+A fifth page, `/modeling`, is a standalone model book with its own dark theme. It is not in the main navigation. The server renders its photos into the HTML (so crawlers see them), and it has an Indonesian version at `/id/modeling` for people searching in Indonesian, built from the same template with the fixed text swapped (`ID_TEMPLATE` in `server/render.js`) and linked to the English page with `hreflang` tags and the sitemap.
 
 ## Project structure
 
@@ -164,7 +164,7 @@ Everything under `/admin`, and every POST, PUT, and DELETE route, requires a ses
 - **Updates**: the feed shown on the About page.
 - **Social links**: shown in the hero, footer, and contact page.
 - **Modeling, Photos**: the model book's photos as a grid in book order. The first 7 are the book; every photo appears in the index. Drop or pick many photos at once from your phone or computer; each is resized in the browser and added to the end of the book. Edit title, category and credit in place (saved as you type), star the cover, drag (or use the arrows) to reorder, and delete.
-- **Modeling, Model details**: the cover line, comp card (based in, languages, Instagram) and measurements shown on `/modeling`. Leave a field empty to hide it.
+- **Modeling, Model details**: the cover line, comp card (based in, languages, Instagram) and measurements shown on `/modeling`. Leave a field empty to hide it. The "Indonesian page" section holds the Indonesian text for the cover line, languages, eyes and hair on `/id/modeling`; an empty one uses the English value.
 - **Messages**: contact form submissions, with mark read/unread, delete, and an unread badge.
 
 Auth is deliberately simple for a student project: one account, a bcrypt hash, and a signed cookie. Login attempts are rate limited per IP (12 per 15 minutes), and the contact form is rate limited (5 per 10 minutes) and has a hidden honeypot field. There is no password reset or two-factor. The password only ever lives in the `ADMIN_PASSWORD` environment variable, never in the repository.
