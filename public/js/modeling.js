@@ -1,6 +1,8 @@
 /* Modeling page: a model book.
 
-   Loads the photos from /api/gallery and builds the page from them:
+   Builds the page from the photos the server embeds in it (#mb-data; the
+   server also renders them as plain HTML for crawlers), falling back to
+   /api/gallery if they are missing:
    - the cover: the first featured photo between the two lines of the name;
    - the comp card's "Available for", from the categories actually used;
    - the book: the first BOOK_SIZE looks (the admin's order), large and
@@ -72,7 +74,22 @@ function renderAvailable() {
   if (present.length) $('[data-available]').textContent = present.join(', ');
 }
 
-async function renderEmail() {
+// The photos and booking email the server put in the page, or null.
+function embeddedData() {
+  const node = document.getElementById('mb-data');
+  if (!node) return null;
+  try {
+    return JSON.parse(node.textContent);
+  } catch {
+    return null;
+  }
+}
+
+async function renderEmail(data) {
+  if (data) {
+    if (data.email) $('[data-email]').href = data.email;
+    return;
+  }
   try {
     const socials = await getJSON('/api/socials');
     const email = socials.find((s) => /^mailto:/i.test(s.url || ''));
@@ -400,10 +417,11 @@ function initViewer() {
 document.addEventListener('DOMContentLoaded', async () => {
   initSmoothScroll();
   initViewer();
-  renderEmail();
+  const data = embeddedData();
+  renderEmail(data);
   let coverFig = null;
   try {
-    items = await getJSON('/api/gallery');
+    items = data ? data.gallery : await getJSON('/api/gallery');
     coverFig = renderCover();
     renderAvailable();
     renderBook();

@@ -2,5 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api
+# Public read-only data the pages may load in the browser.
+Allow: /api/gallery
+Allow: /api/socials
 
 Sitemap: https://shuja3.site/sitemap.xml
