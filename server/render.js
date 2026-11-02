@@ -273,6 +273,7 @@ const WORDS = {
     cover: 'Cover', look: 'Look', looks: 'looks', allInIndex: (n) => `all ${n} in the index`,
     open: (no, title) => `Open look ${no}, ${title}, full screen`, soon: 'Photos coming soon.',
     messageIg: 'Message on Instagram', sendEmail: 'Send an email',
+    photoOf: 'Mohammed Al-Shujaa, male model in Surabaya',
     measure: {},
     category: {}
   },
@@ -281,6 +282,7 @@ const WORDS = {
     cover: 'Sampul', look: 'Look', looks: 'look', allInIndex: (n) => `semua ${n} di indeks`,
     open: (no, title) => `Buka look ${no}, ${title}, layar penuh`, soon: 'Foto segera hadir.',
     messageIg: 'Kirim pesan di Instagram', sendEmail: 'Kirim email',
+    photoOf: 'Mohammed Al-Shujaa, model pria Surabaya',
     measure: {
       height: 'Tinggi', weight: 'Berat', chest: 'Dada', waist: 'Pinggang', hips: 'Pinggul',
       pants: 'Celana', size: 'Ukuran', shoes: 'Sepatu', eyes: 'Mata', hair: 'Rambut'
@@ -296,17 +298,19 @@ const categoryName = (w, c) => w.category[c] || c;
    exactly once; a missing one is reported when the template is first built. */
 const ID_TEMPLATE = [
   ['<html lang="en">', '<html lang="id">'],
-  ['<title>Mohammed Al-Shujaa | Menswear Model in Surabaya, Indonesia</title>',
-    '<title>Mohammed Al-Shujaa | Model Pria di Surabaya, Indonesia</title>'],
-  ['<meta name="description" content="Mohammed Al-Shujaa, menswear model based in Surabaya, Indonesia (184 cm). Available for studio, brand and product, catalogue, casting, and editorial shoots in Surabaya and East Java.">',
-    '<meta name="description" content="Mohammed Al-Shujaa, model pria di Surabaya, Indonesia (tinggi 184 cm). Tersedia untuk foto studio, brand dan produk, katalog, casting, dan editorial di Surabaya dan Jawa Timur.">'],
+  ['<title>Male Model in Surabaya, Indonesia | Mohammed Al-Shujaa</title>',
+    '<title>Model Pria Surabaya &amp; Talent Foto Produk | Mohammed Al-Shujaa</title>'],
+  ['<meta name="description" content="Mohammed Al-Shujaa, male and menswear model based in Surabaya, Indonesia (184 cm). Available for product, catalogue, brand, commercial, casting, and editorial shoots in Surabaya and East Java.">',
+    '<meta name="description" content="Mohammed Al-Shujaa, model pria dan talent di Surabaya, Indonesia (tinggi 184 cm). Tersedia untuk foto produk, katalog, brand, iklan, casting, dan editorial di Surabaya dan Jawa Timur.">'],
+  ['<meta name="keywords" content="male model Surabaya, menswear model Surabaya, male model Indonesia, commercial model Surabaya, catalogue model, product photography model, fashion model East Java, editorial model, casting Surabaya, freelance model Surabaya, Mohammed Al-Shujaa model">',
+    '<meta name="keywords" content="model pria Surabaya, model cowok Surabaya, talent model pria Surabaya, model foto produk Surabaya, model katalog Surabaya, model fashion Jawa Timur, casting model Surabaya, model freelance Surabaya, model iklan Surabaya, model editorial, Mohammed Al-Shujaa">'],
   ['<link rel="canonical" href="https://shuja3.site/modeling">', '<link rel="canonical" href="https://shuja3.site/id/modeling">'],
   ['<meta property="og:locale" content="en_US">\n  <meta property="og:locale:alternate" content="id_ID">',
     '<meta property="og:locale" content="id_ID">\n  <meta property="og:locale:alternate" content="en_US">'],
-  ['<meta property="og:title" content="Mohammed Al-Shujaa | Menswear Model in Surabaya">',
-    '<meta property="og:title" content="Mohammed Al-Shujaa | Model Pria Surabaya">'],
-  ['<meta property="og:description" content="Menswear model based in Surabaya, Indonesia. Studio, brand and product, catalogue, casting, and editorial work.">',
-    '<meta property="og:description" content="Model pria di Surabaya, Indonesia. Foto studio, brand dan produk, katalog, casting, dan editorial.">'],
+  ['<meta property="og:title" content="Male Model in Surabaya | Mohammed Al-Shujaa">',
+    '<meta property="og:title" content="Model Pria Surabaya | Mohammed Al-Shujaa">'],
+  ['<meta property="og:description" content="Male and menswear model based in Surabaya, Indonesia. Product, catalogue, brand, commercial, casting, and editorial work.">',
+    '<meta property="og:description" content="Model pria dan talent di Surabaya, Indonesia. Foto produk, katalog, brand, iklan, casting, dan editorial.">'],
   ['<meta property="og:url" content="https://shuja3.site/modeling">', '<meta property="og:url" content="https://shuja3.site/id/modeling">'],
   ['>Skip to the book<', '>Langsung ke portofolio<'],
   ['<nav class="mb-bar__nav" aria-label="Page">', '<nav class="mb-bar__nav" aria-label="Halaman">'],
@@ -370,7 +374,7 @@ const pad2 = (n) => String(n).padStart(2, '0');
 function coverHtml(gallery, w) {
   const cover = gallery.find((g) => g.featured) || gallery[0];
   if (!cover) return null;
-  const alt = cover.title ? `${cover.title}, Mohammed Al-Shujaa` : 'Mohammed Al-Shujaa';
+  const alt = cover.title ? `${cover.title}, ${w.photoOf}` : w.photoOf;
   const plate = [cover.title || w.cover, categoryName(w, cover.category), cover.credit].filter(Boolean)
     .map((t) => `<span>${esc(t)}</span>`).join('');
   return `<figure class="mb-cover__photo" data-cover>
@@ -387,7 +391,7 @@ function bookHtml(gallery, w) {
     const category = categoryName(w, item.category);
     const meta = item.credit ? `${category}, ${item.credit}` : category;
     return `<li class="mb-look"><button class="mb-look__frame" type="button" aria-label="${esc(w.open(pad2(i + 1), title))}">` +
-      `<img src="${esc(item.image_url)}" alt="${esc(`${title}, Mohammed Al-Shujaa`)}" decoding="async"></button>` +
+      `<img src="${esc(item.image_url)}" alt="${esc(`${title}, ${w.photoOf}`)}" decoding="async"></button>` +
       `<div class="mb-look__caption"><span class="mb-look__no">${pad2(i + 1)}<small> / ${pad2(book.length)}</small></span>` +
       `<div><div class="mb-look__title">${esc(title)}</div><div class="mb-look__meta">${esc(meta)}</div></div></div></li>`;
   }).join('');
@@ -430,8 +434,15 @@ function modelLdHtml(model, gallery, lang) {
     '@type': 'Person',
     '@id': `${SITE}/#person`,
     name: 'Mohammed Al-Shujaa',
+    alternateName: ['Mohammed Alshujaa', 'Mohammed Al Shujaa', 'Shujaa'],
     url: `${SITE}/`,
-    jobTitle: id ? 'Model pria' : 'Menswear model',
+    jobTitle: id ? 'Model pria' : 'Male and menswear model',
+    hasOccupation: {
+      '@type': 'Occupation',
+      name: id ? 'Model pria' : 'Fashion model',
+      occupationLocation: { '@type': 'City', name: 'Surabaya' },
+      skills: id ? 'Foto produk, katalog, brand, iklan, casting, editorial' : 'Product, catalogue, brand, commercial, casting, editorial'
+    },
     description: id
       ? 'Model pria di Surabaya, Indonesia, untuk foto studio, brand dan produk, katalog, casting, dan editorial.'
       : 'Menswear model based in Surabaya, Indonesia, for studio, brand and product, catalogue, casting, and editorial work.',
@@ -452,7 +463,10 @@ function modelLdHtml(model, gallery, lang) {
     '@type': 'ProfilePage',
     url: `${SITE}${id ? '/id' : ''}/modeling`,
     inLanguage: lang,
-    name: id ? 'Mohammed Al-Shujaa | Model Pria di Surabaya' : 'Mohammed Al-Shujaa | Menswear Model in Surabaya',
+    name: id ? 'Model Pria Surabaya | Mohammed Al-Shujaa' : 'Male Model in Surabaya | Mohammed Al-Shujaa',
+    keywords: id
+      ? 'model pria Surabaya, model cowok Surabaya, talent model pria Surabaya, model foto produk Surabaya, model katalog Surabaya, casting model Surabaya, model freelance Surabaya'
+      : 'male model Surabaya, menswear model Surabaya, male model Indonesia, commercial model Surabaya, catalogue model, product photography model, freelance model Surabaya',
     mainEntity: person
   };
   return `<script type="application/ld+json">${jsonForScript(page)}</script>`;
