@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Update the domain below to your custom domain once it is connected in Vercel. -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://shuja3.site/</loc>
     <changefreq>monthly</changefreq>
@@ -18,8 +19,19 @@
   </url>
   <url>
     <loc>https://shuja3.site/modeling</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://shuja3.site/modeling"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://shuja3.site/id/modeling"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://shuja3.site/modeling"/>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shuja3.site/id/modeling</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://shuja3.site/modeling"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://shuja3.site/id/modeling"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://shuja3.site/modeling"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://shuja3.site/contact</loc>

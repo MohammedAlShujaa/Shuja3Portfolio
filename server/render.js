@@ -24,12 +24,13 @@ const templateCache = {};
 
 // The home template lives at home.html, not index.html, so that Vercel does not
 // serve it as a static directory index and bypass server-side rendering.
-const TEMPLATE_FILE = { index: 'home', about: 'about', portfolio: 'portfolio', contact: 'contact', modeling: 'modeling' };
+const TEMPLATE_FILE = { index: 'home', about: 'about', portfolio: 'portfolio', contact: 'contact', modeling: 'modeling', 'modeling-id': 'modeling' };
 
 function template(name) {
   if (!templateCache[name]) {
     const file = TEMPLATE_FILE[name] || name;
-    templateCache[name] = fs.readFileSync(path.join(publicDir, `${file}.html`), 'utf8');
+    const html = fs.readFileSync(path.join(publicDir, `${file}.html`), 'utf8');
+    templateCache[name] = name === 'modeling-id' ? toIndonesian(html) : html;
   }
   return templateCache[name];
 }
@@ -251,8 +252,9 @@ function injectContact(html, { profile, socials }) {
 
 /* --------------------------------------------------------- modeling */
 
-const { MEASUREMENTS } = require('./model');
+const { MEASUREMENTS, inIndonesian } = require('./model');
 const GALLERY_CATEGORIES = ['Studio', 'Brand & Product', 'Casting', 'Editorial'];
+const SITE = 'https://shuja3.site';
 
 // Replaces everything between <!--model:NAME--> and <!--/model:NAME--> in the
 // modeling template. The template keeps sensible defaults there, which show if
@@ -262,14 +264,86 @@ const block = (html, name, inner) =>
 
 const igUrl = (handle) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
 
-function modelCardHtml(model, gallery) {
+/* The words the server writes into the modeling page, in English and in
+   Indonesian (/id/modeling). modeling.js has the same table for the words it
+   writes in the browser. */
+const WORDS = {
+  en: {
+    basedIn: 'Based in', languages: 'Languages', availableFor: 'Available for', measurements: 'Measurements',
+    cover: 'Cover', look: 'Look', looks: 'looks', allInIndex: (n) => `all ${n} in the index`,
+    open: (no, title) => `Open look ${no}, ${title}, full screen`, soon: 'Photos coming soon.',
+    messageIg: 'Message on Instagram', sendEmail: 'Send an email',
+    measure: {},
+    category: {}
+  },
+  id: {
+    basedIn: 'Domisili', languages: 'Bahasa', availableFor: 'Tersedia untuk', measurements: 'Ukuran tubuh',
+    cover: 'Sampul', look: 'Look', looks: 'look', allInIndex: (n) => `semua ${n} di indeks`,
+    open: (no, title) => `Buka look ${no}, ${title}, layar penuh`, soon: 'Foto segera hadir.',
+    messageIg: 'Kirim pesan di Instagram', sendEmail: 'Kirim email',
+    measure: {
+      height: 'Tinggi', weight: 'Berat', chest: 'Dada', waist: 'Pinggang', hips: 'Pinggul',
+      pants: 'Celana', size: 'Ukuran', shoes: 'Sepatu', eyes: 'Mata', hair: 'Rambut'
+    },
+    category: { 'Brand & Product': 'Brand & Produk' }
+  }
+};
+const categoryName = (w, c) => w.category[c] || c;
+
+/* The fixed text of the modeling template and its Indonesian version. The
+   Indonesian page is the English template with these swapped, so the two
+   pages never drift apart in layout. Each entry must match the template
+   exactly once; a missing one is reported when the template is first built. */
+const ID_TEMPLATE = [
+  ['<html lang="en">', '<html lang="id">'],
+  ['<title>Mohammed Al-Shujaa | Menswear Model in Surabaya, Indonesia</title>',
+    '<title>Mohammed Al-Shujaa | Model Pria di Surabaya, Indonesia</title>'],
+  ['<meta name="description" content="Mohammed Al-Shujaa, menswear model based in Surabaya, Indonesia (184 cm). Available for studio, brand and product, catalogue, casting, and editorial shoots in Surabaya and East Java.">',
+    '<meta name="description" content="Mohammed Al-Shujaa, model pria di Surabaya, Indonesia (tinggi 184 cm). Tersedia untuk foto studio, brand dan produk, katalog, casting, dan editorial di Surabaya dan Jawa Timur.">'],
+  ['<link rel="canonical" href="https://shuja3.site/modeling">', '<link rel="canonical" href="https://shuja3.site/id/modeling">'],
+  ['<meta property="og:locale" content="en_US">\n  <meta property="og:locale:alternate" content="id_ID">',
+    '<meta property="og:locale" content="id_ID">\n  <meta property="og:locale:alternate" content="en_US">'],
+  ['<meta property="og:title" content="Mohammed Al-Shujaa | Menswear Model in Surabaya">',
+    '<meta property="og:title" content="Mohammed Al-Shujaa | Model Pria Surabaya">'],
+  ['<meta property="og:description" content="Menswear model based in Surabaya, Indonesia. Studio, brand and product, catalogue, casting, and editorial work.">',
+    '<meta property="og:description" content="Model pria di Surabaya, Indonesia. Foto studio, brand dan produk, katalog, casting, dan editorial.">'],
+  ['<meta property="og:url" content="https://shuja3.site/modeling">', '<meta property="og:url" content="https://shuja3.site/id/modeling">'],
+  ['>Skip to the book<', '>Langsung ke portofolio<'],
+  ['<nav class="mb-bar__nav" aria-label="Page">', '<nav class="mb-bar__nav" aria-label="Halaman">'],
+  ['<a href="#index">Index</a>', '<a href="#index">Indeks</a>'],
+  ['<a class="mb-bar__book" href="#booking">Book</a>', '<a class="mb-bar__book" href="#booking">Booking</a>'],
+  ['<section class="mb-card" aria-label="Details">', '<section class="mb-card" aria-label="Detail">'],
+  ['<section class="mb-book" id="book" aria-label="The book" data-book>', '<section class="mb-book" id="book" aria-label="Portofolio" data-book>'],
+  ['<h2 class="mb-h2">The book</h2>', '<h2 class="mb-h2">Portofolio</h2>'],
+  ['<li class="mb-empty">Loading ...</li>', '<li class="mb-empty">Memuat ...</li>'],
+  ['<h2 class="mb-h2" id="mb-index-title">Index</h2>', '<h2 class="mb-h2" id="mb-index-title">Indeks</h2>'],
+  ['aria-label="Filter photos by category"', 'aria-label="Saring foto menurut kategori"'],
+  ['>Brands, agencies, photographers<', '>Brand, agensi, fotografer<'],
+  ['>For bookings<', '>Untuk booking<'],
+  ['>Message on Instagram<', '>Kirim pesan di Instagram<'],
+  ['>Send an email<', '>Kirim email<'],
+  ['<a href="/">Engineering portfolio</a>', '<a href="/">Portofolio engineering</a>'],
+  ['aria-label="Photo viewer"', 'aria-label="Penampil foto"'],
+  ['aria-label="Close"', 'aria-label="Tutup"'],
+  ['aria-label="Previous photo"', 'aria-label="Foto sebelumnya"'],
+  ['aria-label="Next photo"', 'aria-label="Foto berikutnya"']
+];
+
+function toIndonesian(html) {
+  return ID_TEMPLATE.reduce((out, [en, id]) => {
+    if (out.split(en).length !== 2) console.error(`render.js: the modeling template no longer has exactly one ${JSON.stringify(en)}.`);
+    return out.replace(en, () => id);
+  }, html);
+}
+
+function modelCardHtml(model, gallery, w) {
   const present = GALLERY_CATEGORIES.filter((c) => (gallery || []).some((g) => g.category === c));
-  const available = (present.length ? present : GALLERY_CATEGORIES).join(', ');
+  const available = (present.length ? present : GALLERY_CATEGORIES).map((c) => categoryName(w, c)).join(', ');
 
   const facts = [];
-  if (model.based_in) facts.push(['Based in', esc(model.based_in)]);
-  if (model.languages) facts.push(['Languages', esc(model.languages)]);
-  facts.push(['Available for', esc(available), ' data-available']);
+  if (model.based_in) facts.push([w.basedIn, esc(model.based_in)]);
+  if (model.languages) facts.push([w.languages, esc(model.languages)]);
+  facts.push([w.availableFor, esc(available), ' data-available']);
   if (model.instagram) {
     facts.push(['Instagram', `<a href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">@${esc(model.instagram)}</a>`]);
   }
@@ -279,12 +353,12 @@ function modelCardHtml(model, gallery) {
     .filter(({ key }) => model.measurements && model.measurements[key])
     .map(({ key, label, unit }) => {
       const value = esc(model.measurements[key]).replace(/-/g, '&ndash;');
-      return `<div><dt>${label}</dt><dd>${value}${unit ? `<small>${unit}</small>` : ''}</dd></div>`;
+      return `<div><dt>${w.measure[key] || label}</dt><dd>${value}${unit ? `<small>${unit}</small>` : ''}</dd></div>`;
     })
     .join('');
 
   return `<dl class="mb-card__list">${list}</dl>` +
-    (stats ? `<dl class="mb-stats" aria-label="Measurements">${stats}</dl>` : '');
+    (stats ? `<dl class="mb-stats" aria-label="${w.measurements}">${stats}</dl>` : '');
 }
 
 // The photos, rendered the same way modeling.js renders them, so crawlers and
@@ -293,11 +367,11 @@ function modelCardHtml(model, gallery) {
 const BOOK_SIZE = 7; // keep in step with BOOK_SIZE in public/js/modeling.js
 const pad2 = (n) => String(n).padStart(2, '0');
 
-function coverHtml(gallery) {
+function coverHtml(gallery, w) {
   const cover = gallery.find((g) => g.featured) || gallery[0];
   if (!cover) return null;
   const alt = cover.title ? `${cover.title}, Mohammed Al-Shujaa` : 'Mohammed Al-Shujaa';
-  const plate = [cover.title || 'Cover', cover.category, cover.credit].filter(Boolean)
+  const plate = [cover.title || w.cover, categoryName(w, cover.category), cover.credit].filter(Boolean)
     .map((t) => `<span>${esc(t)}</span>`).join('');
   return `<figure class="mb-cover__photo" data-cover>
         <div class="mb-cover__frame"><img src="${esc(cover.image_url)}" alt="${esc(alt)}" fetchpriority="high"></div>
@@ -305,55 +379,105 @@ function coverHtml(gallery) {
       </figure>`;
 }
 
-function bookHtml(gallery) {
-  if (!gallery.length) return '<li class="mb-empty">Photos coming soon.</li>';
+function bookHtml(gallery, w) {
+  if (!gallery.length) return `<li class="mb-empty">${w.soon}</li>`;
   const book = gallery.slice(0, BOOK_SIZE);
   return book.map((item, i) => {
-    const title = item.title || `Look ${pad2(i + 1)}`;
-    const meta = item.credit ? `${item.category}, ${item.credit}` : item.category;
-    return `<li class="mb-look"><button class="mb-look__frame" type="button" aria-label="Open look ${pad2(i + 1)}, ${esc(title)}, full screen">` +
-      `<img src="${esc(item.image_url)}" alt="${esc(title)}" decoding="async"></button>` +
+    const title = item.title || `${w.look} ${pad2(i + 1)}`;
+    const category = categoryName(w, item.category);
+    const meta = item.credit ? `${category}, ${item.credit}` : category;
+    return `<li class="mb-look"><button class="mb-look__frame" type="button" aria-label="${esc(w.open(pad2(i + 1), title))}">` +
+      `<img src="${esc(item.image_url)}" alt="${esc(`${title}, Mohammed Al-Shujaa`)}" decoding="async"></button>` +
       `<div class="mb-look__caption"><span class="mb-look__no">${pad2(i + 1)}<small> / ${pad2(book.length)}</small></span>` +
       `<div><div class="mb-look__title">${esc(title)}</div><div class="mb-look__meta">${esc(meta)}</div></div></div></li>`;
   }).join('');
 }
 
-function bookCountHtml(gallery) {
+function bookCountHtml(gallery, w) {
   if (!gallery.length) return '';
   const shown = Math.min(gallery.length, BOOK_SIZE);
-  const more = gallery.length > shown ? `, <a href="#index">all ${gallery.length} in the index</a>` : '';
-  return `${pad2(shown)} looks${more}`;
+  const more = gallery.length > shown ? `, <a href="#index">${w.allInIndex(gallery.length)}</a>` : '';
+  return `${pad2(shown)} ${w.looks}${more}`;
 }
 
-function sheetHtml(gallery) {
-  if (!gallery.length) return '<p class="mb-empty">Photos coming soon.</p>';
+function sheetHtml(gallery, w) {
+  if (!gallery.length) return `<p class="mb-empty">${w.soon}</p>`;
   return gallery.map((item, i) =>
-    `<button class="mb-sheet__item" type="button" aria-label="Open look ${pad2(i + 1)}, ${esc(item.title || item.category)}, full screen">` +
+    `<button class="mb-sheet__item" type="button" aria-label="${esc(w.open(pad2(i + 1), item.title || categoryName(w, item.category)))}">` +
     `<div class="mb-sheet__img"><img src="${esc(item.thumb_url || item.image_url)}" alt="" loading="lazy"></div>` +
-    `<div class="mb-sheet__no"><b>${pad2(i + 1)}</b><span>${esc(item.category)}</span></div></button>`
+    `<div class="mb-sheet__no"><b>${pad2(i + 1)}</b><span>${esc(categoryName(w, item.category))}</span></div></button>`
   ).join('');
 }
 
 // JSON inside a <script> tag: "<" is escaped so no value can close the tag.
 const jsonForScript = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
 
-function injectModeling(html, { model, gallery = [], socials = [] }) {
-  if (model) {
-    html = block(html, 'note', esc(model.cover_line));
-    html = block(html, 'card', modelCardHtml(model, gallery));
-    html = block(html, 'instagram', model.instagram
-      ? `<a class="mb-btn mb-btn--solid" href="${esc(igUrl(model.instagram))}" target="_blank" rel="noopener noreferrer">Message on Instagram</a>`
+const absolute = (url) => (/^https?:\/\//i.test(url) ? url : `${SITE}${url.startsWith('/') ? '' : '/'}${url}`);
+const number = (v) => {
+  const n = parseFloat(String(v || '').replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+};
+
+// Structured data (schema.org): a profile page about a person who is a model
+// in Surabaya, with height, weight and links, so search engines know what the
+// page is about. Same person (@id) as on the home page.
+function modelLdHtml(model, gallery, lang) {
+  const cover = gallery.find((g) => g.featured) || gallery[0];
+  const height = number(model.measurements.height);
+  const weight = number(model.measurements.weight);
+  const id = lang === 'id';
+  const person = {
+    '@type': 'Person',
+    '@id': `${SITE}/#person`,
+    name: 'Mohammed Al-Shujaa',
+    url: `${SITE}/`,
+    jobTitle: id ? 'Model pria' : 'Menswear model',
+    description: id
+      ? 'Model pria di Surabaya, Indonesia, untuk foto studio, brand dan produk, katalog, casting, dan editorial.'
+      : 'Menswear model based in Surabaya, Indonesia, for studio, brand and product, catalogue, casting, and editorial work.',
+    homeLocation: { '@type': 'Place', name: 'Surabaya, East Java, Indonesia' },
+    sameAs: [
+      model.instagram ? igUrl(model.instagram) : null,
+      'https://github.com/MohammedAlShujaa',
+      'https://www.linkedin.com/in/mohammed-al-shujaa-071042258'
+    ].filter(Boolean)
+  };
+  if (cover) person.image = absolute(cover.image_url);
+  if (height) person.height = { '@type': 'QuantitativeValue', value: height, unitCode: 'CMT' };
+  if (weight) person.weight = { '@type': 'QuantitativeValue', value: weight, unitCode: 'KGM' };
+  if (model.languages) person.knowsLanguage = model.languages.split(',').map((l) => l.trim()).filter(Boolean);
+
+  const page = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    url: `${SITE}${id ? '/id' : ''}/modeling`,
+    inLanguage: lang,
+    name: id ? 'Mohammed Al-Shujaa | Model Pria di Surabaya' : 'Mohammed Al-Shujaa | Menswear Model in Surabaya',
+    mainEntity: person
+  };
+  return `<script type="application/ld+json">${jsonForScript(page)}</script>`;
+}
+
+function injectModeling(html, { model, gallery = [], socials = [] }, lang = 'en') {
+  const w = WORDS[lang];
+  const shown = model && lang === 'id' ? inIndonesian(model) : model;
+  if (shown) {
+    html = block(html, 'note', esc(shown.cover_line));
+    html = block(html, 'card', modelCardHtml(shown, gallery, w));
+    html = block(html, 'instagram', shown.instagram
+      ? `<a class="mb-btn mb-btn--solid" href="${esc(igUrl(shown.instagram))}" target="_blank" rel="noopener noreferrer">${w.messageIg}</a>`
       : '');
+    html = block(html, 'ld', modelLdHtml(shown, gallery, lang));
   }
 
-  const cover = coverHtml(gallery);
+  const cover = coverHtml(gallery, w);
   if (cover) html = block(html, 'cover', cover);
-  html = block(html, 'count', bookCountHtml(gallery));
-  html = block(html, 'book', bookHtml(gallery));
-  html = block(html, 'sheet', sheetHtml(gallery));
+  html = block(html, 'count', bookCountHtml(gallery, w));
+  html = block(html, 'book', bookHtml(gallery, w));
+  html = block(html, 'sheet', sheetHtml(gallery, w));
 
   const email = socials.find((s) => /^mailto:/i.test(s.url || ''));
-  if (email) html = block(html, 'email', `<a class="mb-btn" href="${esc(email.url)}" data-email>Send an email</a>`);
+  if (email) html = block(html, 'email', `<a class="mb-btn" href="${esc(email.url)}" data-email>${w.sendEmail}</a>`);
 
   const photos = gallery.map(({ id, title, category, credit, image_url, thumb_url, featured }) =>
     ({ id, title, category, credit, image_url, thumb_url, featured }));
@@ -369,7 +493,8 @@ const NEEDS = {
   portfolio: ['projects', 'socials'],
   about: ['profile', 'skills', 'updates', 'socials'],
   contact: ['profile', 'socials'],
-  modeling: ['model', 'gallery', 'socials']
+  modeling: ['model', 'gallery', 'socials'],
+  'modeling-id': ['model', 'gallery', 'socials']
 };
 
 const INJECTORS = {
@@ -377,7 +502,8 @@ const INJECTORS = {
   portfolio: injectPortfolio,
   about: injectAbout,
   contact: injectContact,
-  modeling: injectModeling
+  modeling: injectModeling,
+  'modeling-id': (html, data) => injectModeling(html, data, 'id')
 };
 
 function renderPage(name, data) {

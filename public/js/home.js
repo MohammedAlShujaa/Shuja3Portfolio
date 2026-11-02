@@ -59,7 +59,7 @@ async function renderHero() {
     ctas.appendChild(cv);
   }
 
-  document.title = `${profile.name}, Machine Learning & Intelligent Systems Engineer`;
+  document.title = `${profile.name} | Machine Learning Engineer in Surabaya, Indonesia`;
 }
 
 async function renderHeroSocials() {

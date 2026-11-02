@@ -20,6 +20,27 @@
 const CATEGORIES = ['All', 'Studio', 'Brand & Product', 'Casting', 'Editorial'];
 const BOOK_SIZE = 7;     // looks in the book; every photo is still in the index
 
+// The words this script writes, in English and in Indonesian (/id/modeling,
+// where the server sets <html lang="id">). server/render.js has the same table.
+const WORDS = {
+  en: {
+    all: 'All', cover: 'Cover', look: 'Look', looks: 'looks', soon: 'Photos coming soon.',
+    failed: 'The photos could not be loaded.', photo: 'Modeling photo',
+    allInIndex: (n) => `all ${n} in the index`,
+    open: (no, title) => `Open look ${no}, ${title}, full screen`,
+    category: {}
+  },
+  id: {
+    all: 'Semua', cover: 'Sampul', look: 'Look', looks: 'look', soon: 'Foto segera hadir.',
+    failed: 'Foto tidak dapat dimuat.', photo: 'Foto modeling',
+    allInIndex: (n) => `semua ${n} di indeks`,
+    open: (no, title) => `Buka look ${no}, ${title}, layar penuh`,
+    category: { 'Brand & Product': 'Brand & Produk' }
+  }
+};
+const W = WORDS[document.documentElement.lang === 'id' ? 'id' : 'en'];
+const categoryName = (c) => (c === 'All' ? W.all : W.category[c] || c);
+
 let items = [];          // every photo from the database, in book order
 let shown = [];          // the index's current filtered subset
 let activeFilter = 'All';
@@ -62,7 +83,7 @@ function renderCover() {
   const plate = $('[data-plate]');
   plate.innerHTML = '';
   plate.appendChild(make('b', null, pad(items.indexOf(cover) + 1)));
-  [cover.title || 'Cover', cover.category, cover.credit].filter(Boolean)
+  [cover.title || W.cover, categoryName(cover.category), cover.credit].filter(Boolean)
     .forEach((t) => plate.appendChild(make('span', null, t)));
 
   fig.hidden = false;
@@ -71,7 +92,7 @@ function renderCover() {
 
 function renderAvailable() {
   const present = CATEGORIES.slice(1).filter((c) => items.some((i) => i.category === c));
-  if (present.length) $('[data-available]').textContent = present.join(', ');
+  if (present.length) $('[data-available]').textContent = present.map(categoryName).join(', ');
 }
 
 // The photos and booking email the server put in the page, or null.
@@ -105,29 +126,29 @@ function renderBook() {
   const track = $('[data-track]');
   track.innerHTML = '';
   if (!items.length) {
-    track.appendChild(make('li', 'mb-empty', 'Photos coming soon.'));
+    track.appendChild(make('li', 'mb-empty', W.soon));
     return;
   }
   const book = items.slice(0, BOOK_SIZE);
   const count = $('[data-count]');
-  count.textContent = `${pad(book.length)} looks`;
+  count.textContent = `${pad(book.length)} ${W.looks}`;
   if (items.length > book.length) {
     count.append(', ');
-    const all = make('a', null, `all ${items.length} in the index`);
+    const all = make('a', null, W.allInIndex(items.length));
     all.href = '#index';
     count.appendChild(all);
   }
 
   book.forEach((item, i) => {
     const li = make('li', 'mb-look');
-    const title = item.title || `Look ${pad(i + 1)}`;
+    const title = item.title || `${W.look} ${pad(i + 1)}`;
 
     const frame = make('button', 'mb-look__frame');
     frame.type = 'button';
-    frame.setAttribute('aria-label', `Open look ${pad(i + 1)}, ${title}, full screen`);
+    frame.setAttribute('aria-label', W.open(pad(i + 1), title));
     const img = make('img');
     img.src = item.image_url;
-    img.alt = title;
+    img.alt = `${title}, Mohammed Al-Shujaa`;
     img.decoding = 'async';
     frame.appendChild(img);
     frame.addEventListener('click', () => openViewer(book, i));
@@ -139,7 +160,8 @@ function renderBook() {
     cap.appendChild(no);
     const text = make('div');
     text.appendChild(make('div', 'mb-look__title', title));
-    text.appendChild(make('div', 'mb-look__meta', item.credit ? `${item.category}, ${item.credit}` : item.category));
+    const category = categoryName(item.category);
+    text.appendChild(make('div', 'mb-look__meta', item.credit ? `${category}, ${item.credit}` : category));
     cap.appendChild(text);
     li.appendChild(cap);
 
@@ -166,7 +188,7 @@ function buildFilters() {
   if (cats.length <= 2) return; // nothing to filter
 
   cats.forEach((c) => {
-    const b = make('button', 'mb-filter', c);
+    const b = make('button', 'mb-filter', categoryName(c));
     b.type = 'button';
     b.setAttribute('aria-pressed', String(c === 'All'));
     b.addEventListener('click', () => {
@@ -184,7 +206,7 @@ function renderSheet() {
   shown = activeFilter === 'All' ? items : items.filter((i) => i.category === activeFilter);
 
   if (!shown.length) {
-    sheet.appendChild(make('p', 'mb-empty', 'Photos coming soon.'));
+    sheet.appendChild(make('p', 'mb-empty', W.soon));
     return;
   }
 
@@ -192,7 +214,7 @@ function renderSheet() {
     const n = items.indexOf(item) + 1; // the same number as in the book
     const btn = make('button', 'mb-sheet__item');
     btn.type = 'button';
-    btn.setAttribute('aria-label', `Open look ${pad(n)}, ${item.title || item.category}, full screen`);
+    btn.setAttribute('aria-label', W.open(pad(n), item.title || categoryName(item.category)));
 
     const frame = make('div', 'mb-sheet__img');
     const img = make('img');
@@ -204,7 +226,7 @@ function renderSheet() {
 
     const label = make('div', 'mb-sheet__no');
     label.appendChild(make('b', null, pad(n)));
-    label.appendChild(make('span', null, item.category));
+    label.appendChild(make('span', null, categoryName(item.category)));
     btn.appendChild(label);
 
     btn.addEventListener('click', () => openViewer(shown, i));
@@ -390,10 +412,10 @@ function updateViewer() {
   if (!item) return;
   const img = $('[data-lightbox] img');
   img.src = item.image_url;
-  img.alt = item.title || 'Modeling photo';
+  img.alt = item.title || W.photo;
   const cap = $('[data-lightbox-cap]');
   cap.innerHTML = '';
-  cap.appendChild(make('span', 't', `${pad(items.indexOf(item) + 1)}  ${item.title || item.category}`));
+  cap.appendChild(make('span', 't', `${pad(items.indexOf(item) + 1)}  ${item.title || categoryName(item.category)}`));
   if (item.credit) cap.appendChild(document.createTextNode(item.credit));
 }
 
@@ -430,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error(err);
     $('[data-track]').innerHTML = '';
-    $('[data-track]').appendChild(make('li', 'mb-empty', 'The photos could not be loaded.'));
+    $('[data-track]').appendChild(make('li', 'mb-empty', W.failed));
   }
   initMotion(coverFig);
   revealPage();
