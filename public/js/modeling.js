@@ -26,6 +26,7 @@ const WORDS = {
   en: {
     all: 'All', cover: 'Cover', look: 'Look', looks: 'looks', soon: 'Photos coming soon.',
     failed: 'The photos could not be loaded.', photo: 'Modeling photo',
+    photoOf: 'Mohammed Al-Shujaa, male model in Surabaya',
     allInIndex: (n) => `all ${n} in the index`,
     open: (no, title) => `Open look ${no}, ${title}, full screen`,
     category: {}
@@ -33,6 +34,7 @@ const WORDS = {
   id: {
     all: 'Semua', cover: 'Sampul', look: 'Look', looks: 'look', soon: 'Foto segera hadir.',
     failed: 'Foto tidak dapat dimuat.', photo: 'Foto modeling',
+    photoOf: 'Mohammed Al-Shujaa, model pria Surabaya',
     allInIndex: (n) => `semua ${n} di indeks`,
     open: (no, title) => `Buka look ${no}, ${title}, layar penuh`,
     category: { 'Brand & Product': 'Brand & Produk' }
@@ -77,7 +79,7 @@ function renderCover() {
   const fig = $('[data-cover]');
   const img = fig.querySelector('img');
   img.src = cover.image_url;
-  img.alt = cover.title ? `${cover.title}, Mohammed Al-Shujaa` : 'Mohammed Al-Shujaa';
+  img.alt = cover.title ? `${cover.title}, ${W.photoOf}` : W.photoOf;
 
   // The label under it: "01 / Cover / Brand & Product", with the credit if any.
   const plate = $('[data-plate]');
@@ -148,7 +150,7 @@ function renderBook() {
     frame.setAttribute('aria-label', W.open(pad(i + 1), title));
     const img = make('img');
     img.src = item.image_url;
-    img.alt = `${title}, Mohammed Al-Shujaa`;
+    img.alt = `${title}, ${W.photoOf}`;
     img.decoding = 'async';
     frame.appendChild(img);
     frame.addEventListener('click', () => openViewer(book, i));
