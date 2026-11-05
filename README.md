@@ -51,7 +51,6 @@ server/
 tools/resize-photos.py  batch-resizes photos into web and thumbnail versions before upload
 tools/vendor-gsap.js    copies the GSAP files from node_modules into public/vendor/gsap/<version>/
 tools/vendor-lenis.js   copies the Lenis files from node_modules into public/vendor/lenis/<version>/
-.claude/skills/      official GSAP agent skills for Claude Code (see its README)
 api/index.js         Vercel serverless entry point
 vercel.json          sends every request to the Express handler, plus legacy .html redirects
 ```
